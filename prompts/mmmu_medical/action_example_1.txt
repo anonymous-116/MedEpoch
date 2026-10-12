@@ -1,0 +1,63 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is unrelated
+
+Constructed relationship example using supplied MMMU Medical questions mmmu_medical-0659 and mmmu_medical-0046. The summaries, database ID assignment, and action are illustrative, not observed database records.
+
+### Input
+
+Current question:
+Many natural products contain a tertiary amine with a methyl substituent. What reagent is used to remove the methyl substituent in the following reaction sequence <image 1>?
+A. Lithium aluminium hydride
+B. Sodium hydroxide
+C. Hydrogen chloride
+D. Vinyloxycarbonyl chloride
+
+Supplied Image Information (verbatim excerpt; original image not attached):
+- **Step 1 (N-Demethylation):** A tertiary amine (R-N(Me)-R') undergoes N-demethylation, resulting in a secondary amine (R-NH-R').  
+- **Step 2 (Alkylation):** The secondary amine reacts with an alkyl halide (R''X), forming a tertiary amine (R-N(R'')-R').
+
+Reference answer: Vinyloxycarbonyl chloride.
+
+## Temporary Summary
+
+Summary:
+
+For the reaction-sequence question in which an N-methyl tertiary amine is converted to a secondary amine before subsequent alkylation, the reference answer to which reagent removes the methyl substituent is vinyloxycarbonyl chloride. This identifies the reagent for the N-demethylation step, not the subsequent alkylation step.
+
+Applicable Conditions:
+
+Applicable to reagent-identification questions for the described N-demethylation of an N-methyl tertiary amine in this reaction sequence. Preserve the functional group and requested step; do not extend the answer to every methyl-group removal or add an unsupported mechanism.
+
+## Summary from Another Question
+
+ID: `1`
+Source question for the constructed summary: mmmu_medical-0046.
+
+Summary:
+
+For a histological tissue-identification question with a supplied description of chondrocytes within lacunae, a blue cartilage matrix, and a visible perichondrium, the reference tissue type is cartilage.
+
+Applicable Conditions:
+
+Applicable to tissue-identification questions with the described chondrocytes-in-lacunae and matrix findings. A similar question stem alone is insufficient. The reported cell clustering does not establish a degenerative disease, and the color or perichondrium should not be assumed in another image.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate adds a supported reagent-identification connection for an N-demethylation step. Summary 1 identifies cartilage from histological features and does not cover the chemical decision. Leave Summary 1 untouched and store the new connection with add. Sharing an image-based question format does not justify confirm or merge, and an unrelated target does not justify keep or reject for a useful candidate.",
+      "summaries": [
+        {
+          "summary": "For the reaction-sequence question in which an N-methyl tertiary amine is converted to a secondary amine before subsequent alkylation, the reference answer to which reagent removes the methyl substituent is vinyloxycarbonyl chloride. This identifies the reagent for the N-demethylation step, not the subsequent alkylation step.",
+          "applicable_conditions": "Applicable to reagent-identification questions for the described N-demethylation of an N-methyl tertiary amine in this reaction sequence. Preserve the functional group and requested step; do not extend the answer to every methyl-group removal or add an unsupported mechanism."
+        }
+      ]
+    }
+  ]
+}
+
+---

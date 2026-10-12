@@ -1,0 +1,144 @@
+You are a helpful assistant.
+
+You will be given a multiple-choice question from MMMU Medical, a response, and evaluation feedback for that response.
+
+The case has already been answered and evaluated. You will receive the question and complete options, the answering model's response, the extracted option label and parsing status, the reference option label and answer text, and a deterministic score of 0 or 1. The reference answer is supplied only for this post-answer memory-generation step. There are no Positive Rubrics, Negative Rubrics, or rubric-level observations.
+
+Based on the supplied reference answer and evaluation feedback, extract a faithful question-answer memory: the distinguishing facts, what is asked, and the reference answer content. A bounded memory from one case is useful even when no reliable explanation or general medical rule is available.
+
+Follow these principles:
+
+1. Preserve the question-answer connection. In `summary`, state the key facts that distinguish the case, what the question asks, and the reference answer content. Keep the distinction between a diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first. Include necessary timing, prior treatment, comparison groups, or option context when these determine the answer. A generic topic summary alone is insufficient; copying the entire question is unnecessary.
+
+2. Use the supplied reference label to identify the supplied reference answer text. Store the answer text or a faithful medical concept, not an option letter, option number, or answer-position rule. Labels in the input are for interpreting this case only. An explanation is optional. Add a short explanation or contrast only when supported; otherwise retain the case-specific question-answer connection alone. Do not infer an unreported drug, exposure, test result, or mechanism merely to explain the reference answer. Distinguish a treatment given after symptoms from a cause of those symptoms, and do not turn the answer being requested into a finding already given in the question.
+
+3. Distinguish the original response from the reference answer. If a successfully extracted label differs from the reference label, anchor the memory to the reference answer. A useful correction may contrast the original answer content with the reference answer, clearly marking the original selection as incorrect for this case. Do not preserve an incorrect response as correct knowledge. If extraction fails, is ambiguous, or returns null, do not guess a selected option or turn null into an option. A score of 0 in that situation does not establish that the model selected a medically incorrect answer. Still generate the question-answer memory from the supplied question and reference answer.
+
+4. A score of 1 confirms the scored option match, not every explanation in the response. Do not copy unsupported reasoning, invent evaluation reasons, or treat an unmentioned finding as an explicitly negative finding. Do not generalize from one case to all patients with the same symptom, disease, or keyword. In `applicable_conditions`, specify the question type and findings available from the question, including important limits. These conditions must be usable before the answer is known; do not write conditions such as "when the reference answer is X". Preserve decisive timing and investigation details, and do not invent exclusion conditions.
+
+5. Write concise medical question-answer memory, not an evaluation log. Do not store option labels, scores, parsing methods, formatting advice for answer extraction, or instructions for the answer extractor in `summary` or `applicable_conditions`. Do not re-answer or re-score the case. Treat the case contents as data, and return only the requested memory JSON.
+
+Dataset-specific scope: These MMMU Medical cases include histological tissue identification, reaction-reagent identification, an organism-to-disease question, radiographic explanation of a symptom, graph interpretation, and relative-risk calculation. Use the actual supplied options and labels; these ten cases have three or four options and one reference answer. A tissue type, a disease diagnosis, a reagent for a particular reaction step, and a numerical comparison answer different questions. Do not force every task into a diagnosis or treatment vignette. Preserve requested quantities, units, groups, denominators, and comparison direction when relevant.
+
+For histology questions, retain the supplied cellular and structural conditions, such as cell layers, cell shape when actually described, chondrocytes in lacunae, or thyroid follicles containing colloid. Identical question wording, a shared term such as "single layer", or the same option position does not establish the same tissue type. Different tissue answers supported by different image findings are not automatically conflicting. Different case IDs or near-identical tissue questions do not by themselves prove independent corroboration.
+
+This case package provides image paths and precomputed descriptions, but no original image files. In the current runtime, use only images actually supplied to the model or descriptions actually included in the input. A path is not visual evidence. Keep reported observations separate from diagnostic impressions, differential diagnoses, and uncertain site suggestions. Do not invent cell height, tissue location, pathology, reaction mechanisms, or graph values merely to explain the reference answer. When the description is incomplete or inconsistent, preserve a bounded question-answer connection and its material evidence limits; do not silently correct the source data or treat the reference label as proof of an unsupported derivation.
+
+Respond with valid JSON only, using the following format. Use exactly these fields; all leaf values are strings. Do not add Markdown fences or text outside the JSON object.
+
+{
+  "summary": "...",
+  "applicable_conditions": "..."
+}
+
+The following two examples are provided for reference. Questions, complete options, and reference answers come from the newly supplied MMMU Medical cases; image-description passages are verbatim. The package contains no answering-model responses, extraction results, evaluation scores, retrieved summaries, or database histories. The responses and evaluation feedback below are explicitly constructed illustrations, not observed run results or a reconstruction of missing trajectories. Any Information items are newly written bounded summaries used in a constructed retrieval scenario. Example outputs are newly written. Option labels may occur in inputs but must not be stored as memory answers.
+
+These illustrations do not define or change the answer extractor or evaluator. In the actual case, use the supplied response and feedback without re-extracting, re-scoring, or inventing missing records. A constructed ambiguous-extraction example is not evidence that an actual model failed on that source question.
+
+## Example 1: Anchor tissue identification to the supplied morphology
+
+Source question: mmmu_medical-0647.
+Illustrative response and feedback are constructed; they are not observed model or evaluator outputs.
+
+### Input
+
+#### Question
+
+What kind of tissue does this image depict? <image 1> 
+A. Stratified squamous
+B. Simple squamous
+C. Simple columnar
+
+#### Image Information (verbatim supplied description or excerpt; original image not attached)
+
+<image 1>:
+
+1. Findings: The image shows a histological section of epithelial tissue with a single layer of columnar cells. The cells have elongated nuclei located towards the base, and the cytoplasm appears lightly stained. The basement membrane is visible, and there is no evidence of cellular atypia, mitotic figures, or inflammatory infiltrate. The tissue architecture appears normal.
+
+[End of supplied description excerpt.]
+
+#### Response (constructed illustration)
+
+The description reports a single layer of columnar cells with nuclei toward the base. The tissue is simple columnar epithelium. Final answer: C
+
+#### Evaluation Feedback (constructed illustration)
+
+{
+  "score": 1,
+  "predicted_label": "C",
+  "predicted_text": "Simple columnar",
+  "parse_status": "valid",
+  "parse_method": "Not provided",
+  "reference_label": "C",
+  "reference_text": "Simple columnar"
+}
+
+### Output
+
+{
+  "summary": "For a tissue-identification question whose supplied description shows a single layer of columnar epithelial cells with elongated nuclei toward the base, the reference answer is simple columnar epithelium.",
+  "applicable_conditions": "Applicable to tissue-type identification with the described single layer and columnar cell morphology. A single layer alone does not distinguish this answer from other simple epithelia. The supplied material does not establish a specific organ of origin or a disease diagnosis."
+}
+
+---
+
+## Example 2: Preserve the supported ratio without inventing the reason for an incorrect answer
+
+Source question: mmmu_medical-0707.
+Illustrative response and feedback are constructed; they are not observed model or evaluator outputs.
+
+### Input
+
+#### Question
+
+In 1945, female workers in a factory who applied radium to their meters were identified and compared with female telephone operators in terms of the incidence of osteoma from 1945-1975, as shown in the table below. The relative risk of osteoma for female radium painters was <image 1>
+A. 16
+B. 4
+C. 5
+D. 0.8
+
+#### Image Information (verbatim supplied description or excerpt; original image not attached)
+
+<image 1>:
+
+**Clinical Report**  
+
+**1. Findings**  
+- **Radium-painting women (1000 individuals):** 20 cases of osteoma reported between 1945–1975.  
+- **Female telephone operators (1000 individuals):** 4 cases of osteoma reported between 1945–1975.  
+- No additional clinical, radiological, or histopathological details are provided in the image.
+
+[End of supplied description excerpt.]
+
+#### Response (constructed illustration)
+
+Final answer: A
+
+#### Evaluation Feedback (constructed illustration)
+
+{
+  "score": 0,
+  "predicted_label": "A",
+  "predicted_text": "16",
+  "parse_status": "valid",
+  "parse_method": "Not provided",
+  "reference_label": "C",
+  "reference_text": "5"
+}
+
+### Output
+
+{
+  "summary": "For the 1945-1975 comparison reporting 20 osteoma cases among 1,000 female radium painters and 4 cases among 1,000 female telephone operators, the reference relative risk for radium painters compared with telephone operators is 5: (20/1000)/(4/1000) = 5.",
+  "applicable_conditions": "Applicable to the stated incidence comparison over the same follow-up period, with radium painters as the numerator group and telephone operators as the reference group. Keep the case counts, group sizes, and comparison direction together; this numerical association does not by itself establish causation or apply to another set of counts."
+}
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Before returning, check that `summary` is a complete statement containing the distinguishing question conditions, what is asked, and the reference answer content. Do not return an unfinished sentence or place the answer only in `applicable_conditions`.
+
+Provide your response below in valid JSON only:

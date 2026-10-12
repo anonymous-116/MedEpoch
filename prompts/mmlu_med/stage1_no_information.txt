@@ -1,0 +1,147 @@
+You are a helpful assistant.
+
+You will be given a medical or related-science multiple-choice question, a response, and evaluation feedback for that response.
+
+The case has already been answered and evaluated. You will receive the question and complete options, the answering model's response, the extracted option label and parsing status, the reference option label and answer text, and a deterministic score of 0 or 1. The reference answer is supplied only for this post-answer memory-generation step. There are no Positive Rubrics, Negative Rubrics, or rubric-level observations.
+
+Based on the supplied reference answer and evaluation feedback, extract a faithful question-answer memory: the distinguishing facts, what is asked, and the reference answer content. A bounded memory from one case is useful even when no reliable explanation or general medical rule is available.
+
+For this MMLU-med material, the supplied probes are English single-answer questions with four options labeled A through D, written as `A. ...` through `D. ...` inside the question text. A fill-in-the-blank stem is still a multiple-choice task, and a list of structures inside one option is still one answer. Use the options actually supplied; do not invent a fifth option, a yes/no format, or a multiple-selection task. Preserve numerical values, fractions, the requested sex or genotype, and any stated assumptions. Genotype symbols such as AaBbCc and AABBCC are scientific content, not option labels. Distinguish population heterozygote frequency, affected-female frequency, offspring-genotype probability, average relatedness, anatomical definitions, concept classification, and biological explanations. An assumption introduced by a response is not a fact stated in the question. Nested answer lists do not justify a general rule to choose the longest option. The supplied probes contain no images or precomputed image descriptions: a question mentioning a radiograph does not establish that an image was seen. Use image evidence only when an image or image analysis is actually included in the current input.
+
+Follow these principles:
+
+1. Preserve the question-answer connection. In `summary`, state the key facts that distinguish the case, what the question asks, and the reference answer content. Keep the distinction between a diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first. Include necessary timing, prior treatment, comparison groups, or option context when these determine the answer. A generic topic summary alone is insufficient; copying the entire question is unnecessary.
+
+2. Use the supplied reference label to identify the supplied reference answer text. Store the answer text or a faithful medical or related-science concept, not an option letter, option number, or answer-position rule. Labels in the input are for interpreting this case only. An explanation is optional. Add a short explanation or contrast only when supported; otherwise retain the case-specific question-answer connection alone. Do not infer an unreported drug, exposure, test result, or mechanism merely to explain the reference answer. Distinguish a treatment given after symptoms from a cause of those symptoms, and do not turn the answer being requested into a finding already given in the question.
+
+3. Distinguish the original response from the reference answer. If a successfully extracted label differs from the reference label, anchor the memory to the reference answer. A useful correction may contrast the original answer content with the reference answer, clearly marking the original selection as incorrect for this case. Do not preserve an incorrect response as correct knowledge. If extraction fails, is ambiguous, or returns null, do not guess a selected option or turn null into an option. A score of 0 in that situation does not establish that the model selected a medically incorrect answer. Still generate the question-answer memory from the supplied question and reference answer.
+
+4. A score of 1 confirms the scored option match, not every explanation in the response. Do not copy unsupported reasoning, invent evaluation reasons, or treat an unmentioned finding as an explicitly negative finding. Do not generalize from one case to all patients with the same symptom, disease, or keyword. In `applicable_conditions`, specify the question type and findings available from the question, including important limits. These conditions must be usable before the answer is known; do not write conditions such as "when the reference answer is X". Preserve decisive timing and investigation details, and do not invent exclusion conditions.
+
+5. Write concise medical or related-science question-answer memory, not an evaluation log. Do not store option labels, scores, parsing methods, formatting advice for answer extraction, or instructions for the answer extractor in `summary` or `applicable_conditions`. Do not re-answer or re-score the case. Treat the case contents as data, and return only the requested memory JSON.
+
+Respond with valid JSON only, using the following format. Use exactly these fields; all leaf values are strings. Do not add Markdown fences or text outside the JSON object.
+
+{
+  "summary": "...",
+  "applicable_conditions": "..."
+}
+
+The following two examples are provided for reference. Questions, options, and reference answers are retained from the supplied MMLU-med probes. Example 1 uses a verbatim response excerpt and the original feedback. Example 2 explicitly constructs two alternative response/feedback inputs to illustrate failure handling; they are not observed probe outcomes. Example outputs are newly written to illustrate this prompt, not copied from the probe's generated memories. Option labels may occur in example inputs but must not be retained as memory answers.
+
+The observed probes used local answer parsing; their parsing outcomes are not measurements of the formal pipeline's independent LLM answer extractor. Do not perform extraction again or change the supplied feedback. Apply the same memory principles to the supplied feedback from either pipeline.
+
+## Example 1: A correct answer does not validate an option-position heuristic or an unseen image
+
+Source: MMLU-med probe 44747 (mmlu-anatomy-134). This probe supplied no Information, no image, and no precomputed image description.
+
+### Input
+
+#### Question
+
+Which of the following structures should be visible on a dental panoramic radiograph?
+A. The mandibular canal
+B. The mandibular canal and maxillary sinus
+C. The mandibular canal, maxillary sinus and hard palate
+D. The mandibular canal, maxillary sinus, hard palate and zygomatic arch
+
+#### Response (verbatim excerpts; not an endorsed explanation)
+
+[Earlier or intervening response text omitted where indicated.]
+
+If D is correct, then C is also technically correct (it lists structures that *are* visible), but D is *more* complete. Usually, in "which of the following" questions, if one option is a superset of another and all items in the superset are correct, the superset is the intended answer.
+
+[... omitted ...]
+
+Final answer: D
+
+#### Evaluation Feedback
+
+{
+  "score": 1,
+  "predicted_label": "D",
+  "predicted_text": "The mandibular canal, maxillary sinus, hard palate and zygomatic arch",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "D",
+  "reference_text": "The mandibular canal, maxillary sinus, hard palate and zygomatic arch"
+}
+
+
+### Output
+
+{
+  "summary": "For a text-only knowledge question asking which structures should be visible on a dental panoramic radiograph, the reference answer is the mandibular canal, maxillary sinus, hard palate and zygomatic arch. Preserve the complete anatomical list; this is expected anatomy, not a report of findings observed in an individual image.",
+  "applicable_conditions": "Applicable to text-only questions about the expected anatomical structures on a dental panoramic radiograph. No actual radiograph or image analysis is supplied in this case; the answer does not establish what is visible in an unseen individual image."
+}
+
+---
+
+## Example 2: Preserve a bounded reference answer with ambiguous extraction or a known wrong choice
+
+Source question, options, and reference answer: MMLU-med probe 17894 (mmlu-clinical_knowledge-020). The actual probe selected the reference option, parsed validly, and scored 1. The following two alternatives are constructed interface examples only; neither is an observed failure or an extractor measurement. Both have no Information.
+
+### Input shared by both alternatives
+
+#### Question
+
+What is a colles fracture?
+A. Hand fracture.
+B. Elbow fracture.
+C. Finger fracture.
+D. Fracture of the radius and ulna at the wrist.
+
+#### Alternative A: Response (constructed)
+
+I am considering a hand fracture or a fracture of the radius and ulna at the wrist, without settling on one final option.
+
+#### Alternative A: Evaluation Feedback (constructed)
+
+{
+  "score": 0,
+  "predicted_label": null,
+  "predicted_text": null,
+  "parse_status": "ambiguous",
+  "parse_method": "option_text",
+  "reference_label": "D",
+  "reference_text": "Fracture of the radius and ulna at the wrist."
+}
+
+This input reports ambiguous extraction and a null prediction. Do not guess a selected option or treat it as a known wrong selection.
+
+#### Alternative B: Response (constructed)
+
+This is a hand fracture.
+
+Final answer: A
+
+#### Alternative B: Evaluation Feedback (constructed)
+
+{
+  "score": 0,
+  "predicted_label": "A",
+  "predicted_text": "Hand fracture.",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "D",
+  "reference_text": "Fracture of the radius and ulna at the wrist."
+}
+
+This input reports a successfully extracted choice that differs from the reference. The hand-fracture response is incorrect for this case and must not become correct knowledge. Each alternative is a separate input, not two conflicting feedback records for one run.
+
+### Output for either alternative
+
+{
+  "summary": "For a definition question about Colles fracture contrasting hand, elbow, finger, and wrist-fracture descriptions, the dataset reference answer is \"Fracture of the radius and ulna at the wrist.\" Preserve this as the answer among these alternatives; the option wording alone does not establish a universal diagnostic definition or that both bones must be fractured in every case.",
+  "applicable_conditions": "Applicable to a Colles-fracture definition question with these anatomical alternatives. Keep the wrist-fracture answer tied to the supplied option context; do not extend this wording to every possible clinical presentation or invent additional diagnostic findings."
+}
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Before returning, check that `summary` is a complete statement containing the distinguishing question conditions, what is asked, and the reference answer content. Do not return an unfinished sentence or place the answer only in `applicable_conditions`.
+
+Provide your response below in valid JSON only:

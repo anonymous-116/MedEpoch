@@ -1,0 +1,30 @@
+log_dir: data/trajectories
+skill_store: data/skills/skills.jsonl
+top_k: 3
+write_back: false
+execution:
+  train_concurrency: 1
+  read_only_concurrency: 2
+protocol_repair:
+  enabled: true
+  max_attempts: 1
+
+tools:
+  enabled: [medical_text_search, medical_term_search]
+  search_url: http://127.0.0.1:9001/search
+  default_top_k: 2
+  timeout: 30
+  general_search:
+    api_keys_file: configs/local/tavily_api_keys.yaml
+    search_depth: basic
+    max_results: 3
+    topic: general
+    include_raw_content: false
+    shuffle_keys: true
+memory_retrieval:
+  bm25_candidate_k: 10
+  similarity_service_url: http://127.0.0.1:9000/similarity
+  similarity_service_timeout: 120
+  answer_bge_similarity_threshold: 0.65
+  writer_bge_similarity_threshold: 0.71
+  bge_final_top_k: 3

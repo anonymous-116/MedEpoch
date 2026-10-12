@@ -1,0 +1,108 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied BioASQ case 42259, with case 41932 as unrelated context. Previous versions and database IDs below illustrate decisions and are not claimed as observed database states. Each example has its own output.
+
+### Input
+
+Current question (42259):
+Is Vitamin D deficiency in pregnant women associated with gestational diabetes?
+A. yes
+B. no
+
+Reference answer: yes.
+
+## Temporary Summary
+
+Summary:
+
+For the question asking whether vitamin D deficiency in pregnant women is associated with gestational diabetes, the reference answer is yes: vitamin D deficiency is associated with gestational diabetes in that population. This association answer does not establish causation or show that vitamin D supplementation prevents or treats gestational diabetes.
+
+Applicable Conditions:
+
+Applicable to association questions about vitamin D deficiency and gestational diabetes in pregnant women. Preserve the specified population and association relation; do not transfer this answer to a causal claim, an intervention-effect question, other populations, or all forms of diabetes.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For the question asking whether vitamin D deficiency in pregnant women is associated with gestational diabetes, the reference answer is yes: vitamin D deficiency is associated with gestational diabetes in that population. This association answer does not establish causation or show that vitamin D supplementation prevents or treats gestational diabetes.
+
+Applicable Conditions:
+
+Applicable to association questions about vitamin D deficiency and gestational diabetes in pregnant women. Preserve the specified population and association relation; do not transfer this answer to a causal claim, an intervention-effect question, other populations, or all forms of diabetes.
+
+## Summary from Another Question
+
+ID: `2`
+Source: BioASQ case 41932.
+Source question:
+Does ventriculoperitoneal shunt improve normal pressure hydrocephalus?
+A. yes
+B. no
+
+Reference answer: yes.
+
+Summary:
+
+For the question asking whether a ventriculoperitoneal shunt improves normal pressure hydrocephalus, the reference answer is yes: ventriculoperitoneal shunting can improve normal pressure hydrocephalus. The question does not establish that every patient benefits, that the condition is invariably cured, or which individual patient should receive a shunt.
+
+Applicable Conditions:
+
+Applicable to questions about improvement of normal pressure hydrocephalus with ventriculoperitoneal shunting. Do not extend the answer to every type of hydrocephalus, guaranteed individual benefit, patient-selection criteria, or a specific next-step recommendation not supplied by the question.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same pregnant population, vitamin D deficiency, gestational diabetes, association relation, and affirmative reference answer, with the relevant limits. The candidate adds no substantive improvement, so keep Summary 1 without replacement text. This is the same question, not independent confirmation. Unrelated Summary 2 requires no operation; shared yes answers do not justify merging or splitting.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately overbroad version. These causal and treatment claims are defective input to correct, not endorsed medical guidance:
+
+ID: `1`
+
+Summary:
+
+Vitamin D deficiency causes gestational diabetes in every pregnant woman, and vitamin D supplementation prevents gestational diabetes.
+
+Applicable Conditions:
+
+Applicable to all questions about vitamin D, diabetes causation, and diabetes prevention, regardless of population.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 substitutes a universal causal claim and a supplementation-prevention claim for the association actually asked about. The question and reference support the bounded affirmative association, not those stronger conclusions. Restore that proposition, its pregnant population, and the limits of the evidence without asserting that causation or intervention benefit is disproved. This is a substantive correction, unlike Example A. Leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For the question asking whether vitamin D deficiency in pregnant women is associated with gestational diabetes, the reference answer is yes: vitamin D deficiency is associated with gestational diabetes in that population. This association answer does not establish causation or show that vitamin D supplementation prevents or treats gestational diabetes.",
+          "applicable_conditions": "Applicable to association questions about vitamin D deficiency and gestational diabetes in pregnant women. Preserve the specified population and association relation; do not transfer this answer to a causal claim, an intervention-effect question, other populations, or all forms of diabetes."
+        }
+      ]
+    }
+  ]
+}
+
+---

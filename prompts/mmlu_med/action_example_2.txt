@@ -1,0 +1,97 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied MMLU-med case 45070, with unrelated content from case 35508. Previous versions and target IDs below illustrate decisions and are not claimed as observed database states. Each example has its own output.
+
+### Input
+
+Current question: If an X-linked recessive disorder is in Hardy-Weinberg equilibrium and the incidence in males equals 1 in 100, what is the expected incidence of affected homozygous females?
+Reference answer: 1 in 10 000.
+
+## Temporary Summary
+
+Summary:
+
+For an X-linked recessive disorder in Hardy-Weinberg equilibrium with male incidence 1 in 100, the reference answer to the expected incidence of affected homozygous females is 1 in 10 000. This is the q² calculation with q = 0.01.
+
+Applicable Conditions:
+
+Applicable to population-frequency questions specifying an X-linked recessive disorder, Hardy-Weinberg equilibrium, and male incidence 1 in 100, and asking for affected homozygous females. A different male frequency requires a new calculation; do not substitute heterozygote or carrier frequency.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For an X-linked recessive disorder in Hardy-Weinberg equilibrium with male incidence 1 in 100, the reference answer to the expected incidence of affected homozygous females is 1 in 10 000. This is the q² calculation with q = 0.01.
+
+Applicable Conditions:
+
+Applicable to population-frequency questions specifying an X-linked recessive disorder, Hardy-Weinberg equilibrium, and male incidence 1 in 100, and asking for affected homozygous females. A different male frequency requires a new calculation; do not substitute heterozygote or carrier frequency.
+
+## Summary from Another Question
+
+ID: `2`
+
+Summary:
+
+For a question asking what a tracheostomy is, the reference answer is an opening in the anterior wall of the trachea below the cricoid cartilage. Both the anterior wall and the below-cricoid location distinguish the answer among the alternatives.
+
+Applicable Conditions:
+
+Applicable to anatomical definition questions about tracheostomy that distinguish anterior from posterior and above from below the cricoid cartilage. This definition does not by itself answer a question about indications, treatment priority, or procedural technique.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same equilibrium condition, male incidence, affected-homozygous-female question, and reference answer. The candidate adds no substantive improvement, so keep Summary 1 with no replacement text. It is the same question, not independent confirmation. Summary 2 addresses an unrelated anatomical definition and requires no operation. Do not update identical text or merge/split a same-question version.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately overbroad version, which is not endorsed knowledge:
+
+ID: `1`
+
+Summary:
+
+For any X-linked recessive disorder, the incidence of affected females is 1 in 10 000, regardless of male incidence or equilibrium conditions.
+
+Applicable Conditions:
+
+Applicable to every X-linked recessive population-frequency question.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 incorrectly fixes the female incidence at 1 in 10 000 regardless of male incidence and equilibrium conditions. Replace it with the bounded question-answer connection supported by the current case. Restoring these numerical and modeling conditions is substantive, unlike Example A. Leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For an X-linked recessive disorder in Hardy-Weinberg equilibrium with male incidence 1 in 100, the reference answer to the expected incidence of affected homozygous females is 1 in 10 000. This is the q² calculation with q = 0.01.",
+          "applicable_conditions": "Applicable to population-frequency questions specifying an X-linked recessive disorder, Hardy-Weinberg equilibrium, and male incidence 1 in 100, and asking for affected homozygous females. A different male frequency requires a new calculation; do not substitute heterozygote or carrier frequency."
+        }
+      ]
+    }
+  ]
+}
+
+---

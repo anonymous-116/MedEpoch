@@ -1,0 +1,56 @@
+## Example: Same-question history and a separately affected memory
+
+### Input
+
+Synthetic database state around a T1D/celiac meal-planning case. The historical comparison and usage error below are teaching constructions, not records of the supplied run.
+
+Temporary Summary:
+{
+  "summary": "For confirmed celiac disease with type 1 diabetes, combine strict gluten-free nutrition with structured carbohydrate counting. Read actual product labels and serving sizes rather than assuming that gluten-free substitutes have the same carbohydrate content as other foods. Review the timing of meals, insulin, and glucose changes with the diabetes team; overnight lows and post-meal highs call for assessment of different parts of the regimen, not an indiscriminate increase in all insulin. When the patient is underweight, include adequate energy and protein for nutritional recovery with a dietitian experienced in both conditions. Discuss glucose-monitoring and insulin-delivery options in the context of the current regimen and recurrent hypoglycemia. Individual doses and meal targets should follow the patient's assessed needs and treatment plan.",
+  "applicable_conditions": "Type 1 diabetes with confirmed celiac disease and meal-related glucose variability; nutritional-recovery advice applies when low weight or inadequate intake is present. Do not infer celiac disease, kidney disease, or thyroiditis in a different patient from this memory."
+}
+
+Previous version produced from the current question, ID: current_celiac_v1
+{
+  "summary": "For confirmed celiac disease with type 1 diabetes, combine strict gluten-free nutrition with structured carbohydrate counting. Read actual product labels and serving sizes rather than assuming that gluten-free substitutes have the same carbohydrate content as other foods. Review the timing of meals, insulin, and glucose changes with the diabetes team; overnight lows and post-meal highs call for assessment of different parts of the regimen, not an indiscriminate increase in all insulin. When the patient is underweight, include adequate energy and protein for nutritional recovery with a dietitian experienced in both conditions. Discuss glucose-monitoring and insulin-delivery options in the context of the current regimen and recurrent hypoglycemia. Individual doses and meal targets should follow the patient's assessed needs and treatment plan.",
+  "applicable_conditions": "Type 1 diabetes with confirmed celiac disease and meal-related glucose variability; nutritional-recovery advice applies when low weight or inadequate intake is present. Do not infer celiac disease, kidney disease, or thyroiditis in a different patient from this memory."
+}
+This is a same-question historical version, not independent support.
+
+Summary from another question, ID: general_t1d_meals
+{
+  "summary": "For general T1D meal planning, explain carbohydrate counting and balanced meals with vegetables, lean protein, and whole-grain choices such as whole-wheat bread. Coordinate meals with the existing insulin plan.",
+  "applicable_conditions": "General meal-planning questions in type 1 diabetes."
+}
+
+Usage assessment in this synthetic example: The generic meal advice was retrieved and its whole-wheat example was carried into a response to confirmed celiac disease. The new case and feedback support strict gluten-free nutrition and nutritional recovery for this underweight patient. The general guidance remains useful outside that condition.
+
+### Output
+
+```json
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "current_celiac_v1"
+      ],
+      "reason": "The candidate is unchanged from the same-question version; it supplies neither a substantive update nor independent confirmation.",
+      "summaries": []
+    },
+    {
+      "action": "update",
+      "target_ids": [
+        "general_t1d_meals"
+      ],
+      "reason": "The observed scope error requires a celiac-specific condition on the food examples and an underweight-specific nutrition branch. Preserve the general T1D framework for its valid uses.",
+      "summaries": [
+        {
+          "summary": "For general T1D meal planning, explain carbohydrate counting and balanced meals with vegetables, lean protein, and whole-grain choices such as whole-wheat bread when compatible with the person's dietary requirements. Coordinate meals with the existing insulin plan. With confirmed celiac disease, use strictly gluten-free choices and count carbohydrates from their actual labels and serving sizes; wheat-based examples do not apply to that group. When underweight or intake is inadequate, include dietitian-supported energy and protein for nutritional recovery rather than automatically restricting calories. Do not impose gluten avoidance on people without the relevant diagnosis or indication.",
+          "applicable_conditions": "General T1D meal planning, with separate conditions for confirmed celiac disease and for low weight or inadequate intake. Personal calorie and insulin targets depend on the assessed treatment plan."
+        }
+      ]
+    }
+  ]
+}
+```

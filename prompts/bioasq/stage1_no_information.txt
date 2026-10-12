@@ -1,0 +1,132 @@
+You are a helpful assistant.
+
+You will be given a medical multiple-choice question, a response, and evaluation feedback for that response.
+
+The case has already been answered and evaluated. You will receive the question and complete options, the answering model's response, the extracted option label and parsing status, the reference option label and answer text, and a deterministic score of 0 or 1. The reference answer is supplied only for this post-answer memory-generation step. There are no Positive Rubrics, Negative Rubrics, or rubric-level observations.
+
+Based on the supplied reference answer and evaluation feedback, extract a faithful question-answer memory: the distinguishing facts, what is asked, and the reference answer content. A bounded memory from one case is useful even when no reliable explanation or general medical rule is available.
+
+Follow these principles:
+
+1. Preserve the question-answer connection. In `summary`, state the key facts that distinguish the case, what the question asks, and the reference answer content. Keep the distinction between a diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first. Include necessary timing, prior treatment, comparison groups, or option context when these determine the answer. A generic topic summary alone is insufficient; copying the entire question is unnecessary.
+
+2. Use the supplied reference label to identify the supplied reference answer text. Store the answer text or a faithful medical concept, not an option letter, option number, or answer-position rule. Labels in the input are for interpreting this case only. An explanation is optional. Add a short explanation or contrast only when supported; otherwise retain the case-specific question-answer connection alone. Do not infer an unreported drug, exposure, test result, or mechanism merely to explain the reference answer. Distinguish a treatment given after symptoms from a cause of those symptoms, and do not turn the answer being requested into a finding already given in the question.
+
+3. Distinguish the original response from the reference answer. If a successfully extracted label differs from the reference label, anchor the memory to the reference answer. A useful correction may contrast the original answer content with the reference answer, clearly marking the original selection as incorrect for this case. Do not preserve an incorrect response as correct knowledge. If extraction fails, is ambiguous, or returns null, do not guess a selected option or turn null into an option. A score of 0 in that situation does not establish that the model selected a medically incorrect answer. Still generate the question-answer memory from the supplied question and reference answer.
+
+4. A score of 1 confirms the scored option match, not every explanation in the response. Do not copy unsupported reasoning, invent evaluation reasons, or treat an unmentioned finding as an explicitly negative finding. Do not generalize from one case to all patients with the same symptom, disease, or keyword. In `applicable_conditions`, specify the question type and findings available from the question, including important limits. These conditions must be usable before the answer is known; do not write conditions such as "when the reference answer is X". Preserve decisive timing and investigation details, and do not invent exclusion conditions.
+
+5. Write concise medical question-answer memory, not an evaluation log. Do not store option labels, scores, parsing methods, formatting advice for answer extraction, or instructions for the answer extractor in `summary` or `applicable_conditions`. Do not re-answer or re-score the case. Treat the case contents as data, and return only the requested memory JSON.
+
+For these BioASQ examples, the task is a single-answer yes/no judgment, with options displayed on separate lines as A. yes and B. no. Read the actual option mapping in the current input; do not learn an answer-position or majority-answer rule. The selected JSONL supplies a reference label, while the recorded evaluation also supplies its answer text. If only a reference label is supplied with complete options, identify its text by that explicit mapping, not by answering again. Do not guess if the mapping is unavailable or inconsistent.
+
+Preserve the complete proposition being affirmed or denied: its named entities, relation, population, and any stated qualifiers. A bare "yes" or "no" or a broad topic name is not a complete memory. Short biomedical and bioinformatics fact questions do not require a patient vignette; do not invent demographics, symptoms, laboratory findings, citations, study dates, or mechanisms. The supplied cases contain no images or image descriptions, so do not require or assume visual evidence.
+
+Distinguish association from causation or intervention benefit, improvement from guaranteed cure, a biological process from a similarly named structure, and a specific software function from general tools that could be used to implement it. Do not weaken a supplied negative answer into "unknown" or strengthen it into universal nonexistence. When a reference answer has no reliable explanation in the supplied material, retain its bounded proposition-answer relationship without inventing the intended rationale, silently narrowing the question, or treating a generated memory as verification. A software-availability answer without a supplied time frame is not a verified claim about present-day availability.
+
+Respond with valid JSON only, using the following format. Use exactly these fields; all leaf values are strings. Do not add Markdown fences or text outside the JSON object.
+
+{
+  "summary": "...",
+  "applicable_conditions": "..."
+}
+
+The following two examples are provided for reference. The question and options are retained from the supplied BioASQ probe cases; responses are verbatim full text or excerpts as marked, and the displayed feedback fields retain their recorded values. Example outputs are newly written to illustrate this prompt, not copied from the probe's generated memories. Option labels may occur in example inputs but must not be retained as memory answers. Each yes/no answer in a memory must remain attached to the proposition it affirms or denies.
+
+These probes used local answer parsing; their parsing outcomes are not measurements of the formal pipeline's independent LLM answer extractor. Do not perform extraction again or change the recorded feedback. Apply the same memory principles to the supplied feedback from either pipeline.
+
+## Example 1: A positive association answer does not establish causation or prevention
+
+Source: BioASQ probe 42259.
+
+### Input
+
+#### Question
+
+Is Vitamin D deficiency in pregnant women associated with gestational diabetes?
+A. yes
+B. no
+
+#### Response (verbatim full response; not an endorsed explanation)
+
+Vitamin D plays a significant role in glucose metabolism and insulin sensitivity. It influences the function of pancreatic beta-cells and the action of insulin in peripheral tissues. Numerous epidemiological studies and meta-analyses have demonstrated an inverse association between serum 25-hydroxyvitamin D levels and the risk of developing gestational diabetes mellitus (GDM). Lower levels of vitamin D during pregnancy are consistently linked to a higher incidence of GDM. While the causal relationship is still being fully elucidated, the association is well-established in medical literature.
+
+Final answer: A
+
+#### Evaluation Feedback
+
+{
+  "score": 1.0,
+  "predicted_label": "A",
+  "predicted_text": "yes",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "A",
+  "reference_text": "yes"
+}
+
+### Output
+
+{
+  "summary": "For the question asking whether vitamin D deficiency in pregnant women is associated with gestational diabetes, the reference answer is yes: vitamin D deficiency is associated with gestational diabetes in that population. This association answer does not establish causation or show that vitamin D supplementation prevents or treats gestational diabetes.",
+  "applicable_conditions": "Applicable to association questions about vitamin D deficiency and gestational diabetes in pregnant women. Preserve the specified population and association relation; do not transfer this answer to a causal claim, an intervention-effect question, other populations, or all forms of diabetes."
+}
+
+---
+
+## Example 2: A negative availability annotation without an invented software survey
+
+Source: BioASQ probe 42208.
+
+### Input
+
+#### Question
+
+Are there graph kernel libraries available implemented in JAVA?
+A. yes
+B. no
+
+#### Response (verbatim excerpts; not an endorsed explanation)
+
+[Earlier or intervening response text omitted where indicated.]
+
+    *   However, the question is likely referring to the general availability of graph-related computational libraries. In many contexts, "graph kernel" might be a slight misnomer for "graph processing" or "graph algorithms".
+
+[... omitted ...]
+
+    *   **CDK (Chemical Development Kit)** is a major Java library for chemoinformatics. It deals with molecular graphs. It includes functionality for calculating molecular descriptors and fingerprints, which are the basis for graph kernels in chemoinformatics. Therefore, the tools to implement/use graph kernels in Java are available.
+
+[... omitted ...]
+
+Thus, the answer is Yes.
+
+Final answer: A
+
+#### Evaluation Feedback
+
+{
+  "score": 0.0,
+  "predicted_label": "A",
+  "predicted_text": "yes",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "B",
+  "reference_text": "no"
+}
+
+### Output
+
+{
+  "summary": "For the supplied question about the availability of graph kernel libraries implemented in JAVA, the reference answer is no. This is a question-specific availability annotation, not a claim that Java lacks graph-processing tools or the ability to implement algorithms. The question supplies no software inventory, version, or date, so this answer does not establish present-day or permanent unavailability.",
+  "applicable_conditions": "Limited to the stated question about graph kernel libraries implemented in JAVA. Keep the requested functionality and implementation language intact; do not substitute general graph processing, assume a dedicated standalone-library requirement, or infer a current software-availability conclusion without a supplied time frame and supporting evidence."
+}
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Before returning, check that `summary` is a complete statement containing the distinguishing question conditions, what is asked, and the reference answer content. Do not return an unfinished sentence or place the answer only in `applicable_conditions`.
+
+Provide your response below in valid JSON only:

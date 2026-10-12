@@ -1,0 +1,12 @@
+Your previous response for the current temporary summary failed validation:
+{{VALIDATION_ERRORS}}
+
+Correct it using the original inputs, action definitions, and route constraints. Return the complete corrected JSON object with an `actions` array, not a patch or an explanation outside JSON. Each action has exactly `action`, `target_ids`, `reason`, and `summaries`; each written summary has exactly `summary` and `applicable_conditions`.
+
+This is a single-question comparison. Do not add `candidate_ids`, temporary questions, new output fields, or invented IDs. Use only existing target IDs actually shown in the original input. For a historical-version comparison, choose exactly one `keep` or `update` and target the supplied previous-version ID.
+
+Preserve supported decisions and clinical text when fixing quoting, commas, types, or missing required fields. Do not manufacture a medical fact, new support, or another target to meet a cardinality rule. If the prior action itself violates its definition or route, reconsider it from the original evidence and explain the resulting decision in `reason`. Keep rubric meaning, clinical conditions, and units intact. A repair is not permission to introduce new database operation semantics.
+
+{{ROUTE_REMINDER}}
+
+Output JSON only.

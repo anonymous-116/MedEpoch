@@ -1,0 +1,108 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied medmc_qa case 42919, with an unrelated summary based on 43203. Previous versions below illustrate decisions and are not claimed as observed database states. Each example has its own output. The current question and options are retained verbatim.
+
+### Input
+
+Current question:
+
+Answer the question by choosing one of the options (A, B, C, D).
+Question: Compared with autoclave, use of a dry heat oven for sterilization has the following disadvantage:
+Options:
+A. Time-consuming
+B. Less effective
+C. Causes instruments to rust
+D. Causes sharp instruments to dull
+
+Reference answer: Time-consuming.
+
+## Temporary Summary
+
+Summary:
+
+For a question asking the disadvantage of a dry heat oven for sterilization compared with an autoclave, the reference answer is time-consuming. Preserve the direction of comparison: dry heat is being compared against autoclaving, and the requested property is a disadvantage.
+
+Applicable Conditions:
+
+Applicable to questions asking for this comparative disadvantage of a dry heat oven relative to an autoclave. Do not transfer the answer to every comparator, to an advantage question, or to a specific sterilization protocol; the question supplies no cycle duration, temperature, load, or instrument specification.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For a question asking the disadvantage of a dry heat oven for sterilization compared with an autoclave, the reference answer is time-consuming. Preserve the direction of comparison: dry heat is being compared against autoclaving, and the requested property is a disadvantage.
+
+Applicable Conditions:
+
+Applicable to questions asking for this comparative disadvantage of a dry heat oven relative to an autoclave. Do not transfer the answer to every comparator, to an advantage question, or to a specific sterilization protocol; the question supplies no cycle duration, temperature, load, or instrument specification.
+
+## Summary from Another Question
+
+Source: medmc_qa 43203.
+
+ID: `2`
+
+Summary:
+
+For the question about N. gonorrhoea asking which statement is the exception to "all are true", the reference answer is "All stains are highly susceptible to penicillin". This universal penicillin-susceptibility claim is the statement identified as the exception, not an endorsed fact. Preserve the negative question polarity.
+
+Applicable Conditions:
+
+Applicable to exception or false-statement questions about N. gonorrhoea containing the universal penicillin-susceptibility claim. This answer does not specify a treatment regimen, establish the prevalence of different causes of urethritis, or independently validate the other options.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the dry-heat-versus-autoclave comparison, the requested disadvantage, and the reference answer. The candidate adds no substantive improvement, so keep Summary 1 unchanged. It is the same question, not independent confirmation. Summary 2 concerns a penicillin-susceptibility exception and requires no operation.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately overbroad version. It is a constructed defective example, not endorsed guidance or an observed memory:
+
+ID: `1`
+
+Summary:
+
+For any question comparing sterilization methods, the disadvantage is always that dry heat is time-consuming, regardless of the comparator or the direction of comparison.
+
+Applicable Conditions:
+
+Applicable to every sterilization-method comparison, including questions asking for advantages or using methods other than an autoclave as the comparator.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 discards the autoclave comparator and extends a disadvantage answer to any comparison, including advantage questions. Restore the specific direction and requested property supported by the question and reference. This correction is substantive, unlike Example A. Do not add cycle settings absent from the question; leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For a question asking the disadvantage of a dry heat oven for sterilization compared with an autoclave, the reference answer is time-consuming. Preserve the direction of comparison: dry heat is being compared against autoclaving, and the requested property is a disadvantage.",
+          "applicable_conditions": "Applicable to questions asking for this comparative disadvantage of a dry heat oven relative to an autoclave. Do not transfer the answer to every comparator, to an advantage question, or to a specific sterilization protocol; the question supplies no cycle duration, temperature, load, or instrument specification."
+        }
+      ]
+    }
+  ]
+}
+
+---

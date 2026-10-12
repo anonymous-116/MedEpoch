@@ -1,0 +1,19 @@
+tools:
+  enabled: [medical_text_search, medical_term_search]
+  general_search:
+    api_keys_file: configs/local/tavily_api_keys.yaml
+    search_depth: basic
+    max_results: 3
+    topic: general
+    include_raw_content: false
+    shuffle_keys: true
+  medical_term_search:
+    provider: medlineplus
+    endpoint: https://wsearch.nlm.nih.gov/ws/query
+    timeout: 30
+    retmax: 1
+    tool_id: amf-medical-term-search
+
+evaluation:
+  enabled: true
+  type: healthbench_rubric

@@ -1,0 +1,98 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied SEER case 723, with a non-applicable comparison memory based on case 370. Previous versions and database IDs illustrate decisions and are not claimed as observed database states. Each example has its own output.
+
+### Input
+
+Current question (condensed from case 723): Given an 85-year-old woman's SEER record with Radioactive implants (includes brachytherapy) (1988+), nodes positive 0 and examined 1, ER/PR Positive, HER2 Negative, raw CS tumor size 14, Chemotherapy recode No/Unknown, Vital status Dead, and COD to site recode Alzheimers (ICD-9 and 10 only), choose one radiation/surgery-sequence category.
+Reference answer: Radiation after surgery.
+
+## Temporary Summary
+
+Summary:
+
+For the supplied SEER record of an 85-year-old woman with Radiation recode Radioactive implants (includes brachytherapy) (1988+), regional nodes positive 0 and examined 1, ER/PR Positive, HER2 Negative, CS tumor size recorded as 14, and Chemotherapy recode No/Unknown, the reference answer to the requested choice among radiation/surgery sequences is Radiation after surgery. The record lists Vital status Dead and COD to site recode Alzheimers (ICD-9 and 10 only); death does not establish a no-treatment answer. The modality name alone does not establish intraoperative or postoperative delivery for other cases.
+
+Applicable Conditions:
+
+Applicable to the described SEER radiation/surgery-sequence question with the combined radioactive-implant, receptor, node, and raw size fields. Keep radiation modality distinct from timing relative to surgery. Do not transfer an answer solely from age, death, a shared disease name, or a different record's radiation modality, and do not infer a specific operation.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For the supplied SEER record of an 85-year-old woman with Radiation recode Radioactive implants (includes brachytherapy) (1988+), regional nodes positive 0 and examined 1, ER/PR Positive, HER2 Negative, CS tumor size recorded as 14, and Chemotherapy recode No/Unknown, the reference answer to the requested choice among radiation/surgery sequences is Radiation after surgery. The record lists Vital status Dead and COD to site recode Alzheimers (ICD-9 and 10 only); death does not establish a no-treatment answer. The modality name alone does not establish intraoperative or postoperative delivery for other cases.
+
+Applicable Conditions:
+
+Applicable to the described SEER radiation/surgery-sequence question with the combined radioactive-implant, receptor, node, and raw size fields. Keep radiation modality distinct from timing relative to surgery. Do not transfer an answer solely from age, death, a shared disease name, or a different record's radiation modality, and do not infer a specific operation.
+
+## Summary from Another Question
+
+ID: `2`
+Source content: SEER case 370, rewritten as a bounded memory for this example.
+
+Summary:
+
+For the supplied SEER record of a 67-year-old woman with Radiation recode None/Unknown, Chemotherapy recode Yes, regional nodes positive 3 and examined 13, two recorded tumors, ER/PR Positive, HER2 Borderline, and CS tumor size recorded as 62, the reference answer to the requested choice among radiation/surgery sequences is No radiation and/or cancer-directed surgery. The record also lists Vital status Dead and COD to site recode Intrahepatic Bile Duct; these fields do not establish the primary tumor site, a metastasis, or a rule that death determines the treatment answer. None/Unknown does not establish confirmed absence of radiation or a future treatment plan.
+
+Applicable Conditions:
+
+Applicable to the described SEER radiation/surgery-sequence question with the combined None/Unknown radiation, Yes chemotherapy, node, receptor, and raw size fields. Preserve the full combined answer category. Do not transfer a Beam radiation record's sequence, infer completed neoadjuvant therapy from Yes chemotherapy, or use death or COD site alone to choose a treatment category.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same radioactive-implant record conditions, requested sequence, and reference answer. The candidate adds no substantive improvement, so keep Summary 1 without replacement text. A same-question version is not independent confirmation. Summary 2 covers a different None/Unknown radiation profile and needs no operation. Do not update identical text or merge/split a same-question version.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately unsupported version. It is erroneous input to correct, not endorsed guidance.
+
+ID: `1`
+
+Summary:
+
+For every SEER patient whose vital status is Dead, the next-treatment answer is No radiation and/or cancer-directed surgery, regardless of the recorded radiation modality.
+
+Applicable Conditions:
+
+Applicable to every SEER record with Vital status Dead.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 substitutes a universal death-based answer for this question's supported radioactive-implant record-to-answer association. Case 723 has Vital status Dead but its supplied reference is Radiation after surgery. Replace the overbroad statement with the bounded association, without inventing an operation or making implants a universal sequence rule. This restores a substantive missing boundary; leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For the supplied SEER record of an 85-year-old woman with Radiation recode Radioactive implants (includes brachytherapy) (1988+), regional nodes positive 0 and examined 1, ER/PR Positive, HER2 Negative, CS tumor size recorded as 14, and Chemotherapy recode No/Unknown, the reference answer to the requested choice among radiation/surgery sequences is Radiation after surgery. The record lists Vital status Dead and COD to site recode Alzheimers (ICD-9 and 10 only); death does not establish a no-treatment answer. The modality name alone does not establish intraoperative or postoperative delivery for other cases.",
+          "applicable_conditions": "Applicable to the described SEER radiation/surgery-sequence question with the combined radioactive-implant, receptor, node, and raw size fields. Keep radiation modality distinct from timing relative to surgery. Do not transfer an answer solely from age, death, a shared disease name, or a different record's radiation modality, and do not infer a specific operation."
+        }
+      ]
+    }
+  ]
+}
+
+---

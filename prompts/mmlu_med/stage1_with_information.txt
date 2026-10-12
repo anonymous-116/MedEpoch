@@ -1,0 +1,231 @@
+You are a helpful assistant.
+
+You will be given a medical or related-science multiple-choice question, several pieces of reference Information, a response, and evaluation feedback for that response.
+
+The case has already been answered and evaluated. You will receive the question and complete options, the answering model's response, the extracted option label and parsing status, the reference option label and answer text, and a deterministic score of 0 or 1. The reference answer is supplied only for this post-answer memory-generation step. There are no Positive Rubrics, Negative Rubrics, or rubric-level observations.
+
+Based on the supplied reference answer and evaluation feedback, extract a faithful question-answer memory: the distinguishing facts, what is asked, and the reference answer content. A bounded memory from one case is useful even when no reliable explanation or general medical rule is available.
+
+For this MMLU-med material, the supplied probes are English single-answer questions with four options labeled A through D, written as `A. ...` through `D. ...` inside the question text. A fill-in-the-blank stem is still a multiple-choice task, and a list of structures inside one option is still one answer. Use the options actually supplied; do not invent a fifth option, a yes/no format, or a multiple-selection task. Preserve numerical values, fractions, the requested sex or genotype, and any stated assumptions. Genotype symbols such as AaBbCc and AABBCC are scientific content, not option labels. Distinguish population heterozygote frequency, affected-female frequency, offspring-genotype probability, average relatedness, anatomical definitions, concept classification, and biological explanations. An assumption introduced by a response is not a fact stated in the question. Nested answer lists do not justify a general rule to choose the longest option. The supplied probes contain no images or precomputed image descriptions: a question mentioning a radiograph does not establish that an image was seen. Use image evidence only when an image or image analysis is actually included in the current input.
+
+Follow these principles:
+
+1. Preserve the question-answer connection. In `summary`, state the key facts that distinguish the case, what the question asks, and the reference answer content. Keep the distinction between a diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first. Include necessary timing, prior treatment, comparison groups, or option context when these determine the answer. A generic topic summary alone is insufficient; copying the entire question is unnecessary.
+
+2. Use the supplied reference label to identify the supplied reference answer text. Store the answer text or a faithful medical or related-science concept, not an option letter, option number, or answer-position rule. Labels in the input are for interpreting this case only. An explanation is optional. Add a short explanation or contrast only when supported; otherwise retain the case-specific question-answer connection alone. Do not infer an unreported drug, exposure, test result, or mechanism merely to explain the reference answer. Distinguish a treatment given after symptoms from a cause of those symptoms, and do not turn the answer being requested into a finding already given in the question.
+
+3. Distinguish the original response from the reference answer. If a successfully extracted label differs from the reference label, anchor the memory to the reference answer. A useful correction may contrast the original answer content with the reference answer, clearly marking the original selection as incorrect for this case. Do not preserve an incorrect response as correct knowledge. If extraction fails, is ambiguous, or returns null, do not guess a selected option or turn null into an option. A score of 0 in that situation does not establish that the model selected a medically incorrect answer. Still generate the question-answer memory from the supplied question and reference answer.
+
+4. A score of 1 confirms the scored option match, not every explanation in the response. Do not copy unsupported reasoning, invent evaluation reasons, or treat an unmentioned finding as an explicitly negative finding. Do not generalize from one case to all patients with the same symptom, disease, or keyword. In `applicable_conditions`, specify the question type and findings available from the question, including important limits. These conditions must be usable before the answer is known; do not write conditions such as "when the reference answer is X". Preserve decisive timing and investigation details, and do not invent exclusion conditions.
+
+5. Write concise medical or related-science question-answer memory, not an evaluation log. Do not store option labels, scores, parsing methods, formatting advice for answer extraction, or instructions for the answer extractor in `summary` or `applicable_conditions`. Do not re-answer or re-score the case. Treat the case contents as data, and return only the requested memory JSON.
+
+Also assess whether and how each provided Information item appears to have influenced the response. Do not infer use from topical similarity alone. Give an overall assessment and briefly describe the role of each Information item.
+
+In each `analysis`, distinguish whether the Information applies to the current question from whether the response provides evidence of using it. A memory about diagnosis may be relevant to recognizing a condition without supporting the requested treatment. Identify helpful overlap, inappropriate transfer, or a conflict only when supported by the case. Similar wording or compatible reasoning may suggest influence but does not prove it; say when influence cannot be determined. Do not infer benefit from a correct score or harm from an incorrect score or parsing failure alone. Retrieved Information is not authoritative merely because it was retrieved; do not let it override the supplied reference answer for this case.
+
+Read the Information identifiers from the current case, not from the examples. Return exactly one `information_effects` entry for every provided Information item, copying its identifier exactly as supplied. Retrieved items use the runtime format `Information 1`, `Information 2`, `Information 3`, and so on; `information_id` must copy the current input's `Information N` verbatim. Source case IDs, database IDs, version numbers, and option letters are not Information identifiers. Do not renumber, merge, or omit items, including irrelevant items. If a selected case contains no Information items, return an empty array and state that no Information was provided in `overall`. Keep this usage assessment separate from the reusable medical content in `summary` and `applicable_conditions`.
+
+Respond with valid JSON only, using the following format. Use exactly these fields; all leaf values are strings. Do not add Markdown fences or text outside the JSON object.
+
+{
+  "summary": "...",
+  "applicable_conditions": "...",
+  "information_usage": {
+    "overall": "...",
+    "information_effects": [
+      {
+        "information_id": "Information 1",
+        "analysis": "..."
+      }
+    ]
+  }
+}
+
+The following two examples are provided for reference. The question and options are retained from the supplied MMLU-med probe cases; responses and retrieved memory text are the original probe text, and feedback retains the original recorded values. Example outputs are newly written to illustrate this prompt, not copied from the probe's generated memories. Option labels may occur in example inputs but must not be retained as memory answers.
+
+These probes used local answer parsing; their parsing outcomes are not measurements of the formal pipeline's independent LLM answer extractor. Do not perform extraction again or change the recorded feedback. Apply the same memory principles to the supplied feedback from either pipeline.
+
+For these examples only, retrieved-item headings have been normalized to the runtime format `Information 1` and `Information 2`, consistently in each example input and output. Retrieval order and content are unchanged. Source IDs below identify case provenance, not Information identifiers. For the actual case, copy each supplied `Information N` identifier exactly; do not renumber or derive it from a source ID, database ID, version number, or option letter. Retrieved content is raw material to assess, not an endorsed set of rules.
+
+---
+
+## Example 1: Relevant calculation guidance and a different requested genotype
+
+Source: MMLU-med probe 18209 (mmlu-medical_genetics-002).
+
+### Input
+
+#### Question
+
+If the frequency of males affected with an X-linked recessive condition in a human population is .10 (one in ten), what will be the expected frequency of affected females?
+A. 0.01
+B. 0.001
+C. 0.02
+D. 0.0001
+
+#### Information (raw retrieved content)
+
+##### Information 1
+
+Source: probe 45070.
+
+For X-linked recessive disorders in Hardy-Weinberg equilibrium, the allele frequency (q) is equal to the incidence in males (hemizygotes). The incidence in affected homozygous females is calculated as q². Therefore, if the male incidence is 1 in N, the female incidence is 1 in N².
+
+##### Information 2
+
+Source: probe 44799.
+
+Hardy-Weinberg heterozygote frequency is calculated as 2pq, where p and q are the frequencies of the two alleles (which must sum to 1). For allele frequencies of 0.6 and 0.4, the heterozygote frequency is 2 * 0.6 * 0.4 = 0.48.
+
+#### Response (original probe response; not an endorsed explanation)
+
+To determine the expected frequency of affected females for an X-linked recessive condition, we apply the principles of Hardy-Weinberg equilibrium.
+
+1.  **Identify the allele frequency ($q$):**
+    For X-linked recessive traits, males have only one X chromosome. Therefore, the frequency of the affected allele ($q$) in the population is equal to the frequency of affected males.
+    Given: Frequency of affected males = $0.10$.
+    So, $q = 0.10$.
+
+2.  **Calculate the frequency of affected females:**
+    Females have two X chromosomes. To be affected by a recessive condition, a female must be homozygous for the recessive allele (genotype $X^q X^q$).
+    According to the Hardy-Weinberg principle, the frequency of the homozygous recessive genotype is $q^2$.
+    
+    Calculation:
+    $$q^2 = (0.10)^2 = 0.01$$
+
+3.  **Compare with options:**
+    A. 0.01
+    B. 0.001
+    C. 0.02
+    D. 0.0001
+
+The calculated frequency is 0.01, which corresponds to option A.
+
+Final answer: A
+
+#### Evaluation Feedback
+
+{
+  "score": 1,
+  "predicted_label": "A",
+  "predicted_text": "0.01",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "A",
+  "reference_text": "0.01"
+}
+
+### Output
+
+{
+  "summary": "For the X-linked recessive population-frequency question with affected males at 0.10 (one in ten), the reference answer to the expected frequency of affected females is 0.01. The requested quantity is affected-female frequency, not heterozygote frequency.",
+  "applicable_conditions": "Applicable to the stated population-genetics expectation question with an X-linked recessive condition and male affected frequency 0.10. The stem does not explicitly state equilibrium; retain this bounded numerical pairing rather than asserting it for arbitrary populations or for heterozygote or carrier frequencies.",
+  "information_usage": {
+    "overall": "Information 1 addresses the requested affected-female frequency under an equilibrium model, whereas Information 2 addresses heterozygotes. The response explicitly adopts Hardy-Weinberg reasoning and overlaps with Information 1, but it does not attribute its reasoning to retrieval. The score alone cannot establish influence, and the stem itself does not explicitly state equilibrium.",
+    "information_effects": [
+      {
+        "information_id": "Information 1",
+        "analysis": "This item from the male-incidence 1-in-100 question is relevant to an equilibrium-based calculation of affected homozygous females. The response uses the same q² relation with the current value 0.10 rather than copying 1 in 10 000. This is compatible with influence but does not prove it. The equilibrium assumption is explicit in this memory and the response, not in the current stem."
+      },
+      {
+        "information_id": "Information 2",
+        "analysis": "This item asks for heterozygote frequency with allele frequencies 0.6 and 0.4. It shares genetics and frequency terminology but does not supply the current affected-female answer. The response uses q² rather than 2pq; no specific evidence shows use of this item. Neither its numerical answer nor its requested genotype should be transferred."
+      }
+    ]
+  }
+}
+
+---
+
+## Example 2: Shared genetics terminology does not make retrieved guidance applicable
+
+Source: MMLU-med probe 18016 (mmlu-medical_genetics-048).
+
+### Input
+
+#### Question
+
+The proportion of genes shared by first cousins is on average ___.
+A. 1.0/2
+B. 1.0/4
+C. 1.0/8
+D. 1.0/16
+
+#### Information (raw retrieved content)
+
+##### Information 1
+
+Source: probe 44799.
+
+Hardy-Weinberg heterozygote frequency is calculated as 2pq, where p and q are the frequencies of the two alleles (which must sum to 1). For allele frequencies of 0.6 and 0.4, the heterozygote frequency is 2 * 0.6 * 0.4 = 0.48.
+
+##### Information 2
+
+Source: probe 18145.
+
+For a cross between two heterozygotes at multiple unlinked loci (e.g., AaBbCc x AaBbCc), the frequency of a specific homozygous dominant genotype (e.g., AABBCC) is calculated by multiplying the independent probabilities for each locus. Since the probability of a homozygous dominant offspring (AA) from a heterozygous cross (Aa x Aa) is 1/4, the combined frequency for three loci is (1/4)^3 = 1/64.
+
+#### Response (original probe response; not an endorsed explanation)
+
+To determine the proportion of genes shared by first cousins, we can trace the path of inheritance through their common ancestors (grandparents).
+
+1.  **Parent-Child Relationship**: A child shares, on average, 1/2 of their genes with each parent.
+2.  **Grandparent-Grandchild Relationship**: A grandchild shares, on average, 1/4 of their genes with each grandparent ($1/2 \times 1/2$).
+3.  **First Cousins**: First cousins share the same set of grandparents.
+    *   Cousin A receives 1/4 of their genes from a specific grandparent.
+    *   Cousin B receives 1/4 of their genes from that same grandparent.
+    *   The probability that a specific gene in Cousin A is identical by descent to a specific gene in Cousin B via that grandparent is calculated by multiplying the probabilities of transmission: $1/4 \times 1/4 = 1/16$.
+    *   Since there are two common grandparents, we sum the contributions from both paths: $1/16 + 1/16 = 2/16 = 1/8$.
+
+Alternatively, using the coefficient of relationship ($r$):
+*   Siblings: $r = 1/2$
+*   Half-siblings: $r = 1/4$
+*   Grandparent/Grandchild: $r = 1/4$
+*   First Cousins: $r = 1/8$
+
+Therefore, the proportion of genes shared by first cousins is on average 1/8.
+
+Final answer: C
+
+#### Evaluation Feedback
+
+{
+  "score": 1,
+  "predicted_label": "C",
+  "predicted_text": "1.0/8",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "C",
+  "reference_text": "1.0/8"
+}
+
+### Output
+
+{
+  "summary": "For a question asking the average proportion of genes shared by first cousins, the reference answer is 1.0/8. This is an average for the stated family relationship, not a population allele frequency or an offspring-genotype probability.",
+  "applicable_conditions": "Applicable to questions about average genetic sharing by first cousins. Preserve the relationship and the word average; do not use Hardy-Weinberg heterozygote calculations or a multilocus mating probability to answer this different question.",
+  "information_usage": {
+    "overall": "Neither retrieved item answers the average-sharing question for first cousins. The response discusses inheritance through common grandparents rather than either retrieved calculation. The text provides no specific evidence of using the items; shared genetics terminology and a correct score do not establish benefit or causal influence.",
+    "information_effects": [
+      {
+        "information_id": "Information 1",
+        "analysis": "This is a population heterozygote-frequency calculation under Hardy-Weinberg equilibrium, not an average proportion shared by a pair of relatives. Its 0.48 answer and 2pq calculation do not apply to the current question. The response does not identify this memory as a source."
+      },
+      {
+        "information_id": "Information 2",
+        "analysis": "This concerns the probability of an AABBCC offspring from an AaBbCc mating under an independent-loci interpretation. Shared words such as genes and probability do not make that mating outcome equivalent to average genetic sharing by first cousins. The response supplies no specific evidence of using this item; its 1/64 result must not replace the current reference answer."
+      }
+    ]
+  }
+}
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Before returning, check that `summary` is a complete statement containing the distinguishing question conditions, what is asked, and the reference answer content. Do not return an unfinished sentence or place the answer only in `applicable_conditions`.
+
+Provide your response below in valid JSON only:

@@ -1,0 +1,4 @@
+Your previous response has the following issues:
+{{VALIDATION_ERRORS}}
+
+Correct these issues according to the original instructions and return the complete corrected JSON. Repair only syntax, structure, required fields, ID references, candidate coverage, and action constraints implicated by the validation errors. Preserve valid action choices, candidate-to-action associations, intended targets, and substantive summary content. Use only candidate_ids and target_ids from the original input, retaining their distinct roles; cover every original candidate as required by the original window instructions. Correct invalid fields only as supported by those inputs and instructions. Do not invent an operation, candidate, target, reference answer, or medical fact to make validation pass. Do not use this step to reinterpret scores, guess failed extractions, or change a valid database decision. Output JSON only.

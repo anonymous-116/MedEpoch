@@ -1,0 +1,62 @@
+---
+
+## Example
+
+### Input
+
+## Temporary Summary
+
+Summary:
+
+For school-age childhood catch-up planning, obtain the complete vaccination record before determining the exact missing doses. Review vaccine names, dose numbers, administration dates, age at administration, doses received elsewhere, prior disease history, previous adverse reactions, contraindications, and medical conditions that may alter vaccine selection or timing.
+
+When the complete record is unavailable, do not invent exact missing doses or definitive dates. However, a general catch-up-plan template can still be provided. The template may include patient demographics, prior-dose documentation, vaccine-by-vaccine dose and minimum-interval fields, a visit schedule, safety notes, and clinician documentation fields. Clearly distinguish the template from the final individualized plan.
+
+Applicable Conditions:
+
+Applicable when a clinician requests a childhood catch-up-plan note, documentation template, or scheduling framework, especially for a school-age child whose complete vaccination record is not yet available.
+
+## Summaries from Other Questions
+
+The following summaries were produced from other questions.
+They may provide independent support and may be considered for `confirm`.
+
+### Summary 1
+
+ID: `immunization_record_review`
+
+Summary:
+
+For childhood immunization-record review, first obtain the country or region, exact age, complete vaccination history, administration dates, and relevant medical conditions. When these details are absent, do not provide definitive dose counts or schedules. Ask for the missing information before giving a specific assessment.
+
+When the record is available, verify previous doses, age at administration, minimum intervals, contraindications, and conditions that may alter vaccine selection or timing.
+
+Applicable Conditions:
+
+Applicable when reviewing an incomplete childhood vaccination record or determining which catch-up or booster doses are required.
+
+Usage Assessment:
+
+This summary correctly prevented the response from inventing exact missing doses. However, it was applied too broadly. The user requested a general catch-up-plan template, but the response only asked for the vaccination record and provided no template. The requirement for complete records should limit definitive individualized conclusions, not prevent safe general frameworks or conditional templates.
+
+### Output
+
+{
+"actions": [
+{
+"action": "update",
+"target_ids": [
+"immunization_record_review"
+],
+"reason": "The temporary summary concerns the same decision point, but the usage assessment shows that the existing summary was applied too broadly. Its valid restriction on individualized conclusions should be preserved while adding an exception for safe general templates and conditional guidance.",
+"summaries": [
+{
+"summary": "For childhood immunization-record review, first obtain the country or region, exact age, complete vaccination history, administration dates, doses received elsewhere, prior disease history, previous adverse reactions, contraindications, and relevant medical conditions before determining which exact catch-up or booster doses are required.\n\nWhen these details are absent, do not invent definitive patient-specific dose counts, intervals, or dates. Ask for the missing information and explain that the final assessment depends on the individual record and the applicable jurisdiction-specific schedule.\n\nIf the user requests a general review framework, documentation template, or catch-up-plan format, provide the parts that can be completed safely. A fillable template may include patient demographics, prior-dose documentation, vaccine-by-vaccine dose and minimum-interval fields, a visit schedule, safety notes, and clinician documentation fields. Clearly distinguish the general template from the final individualized plan.",
+"applicable_conditions": "Applicable to childhood immunization-record review, catch-up assessment, and catch-up-plan documentation. Complete records are required for definitive patient-specific conclusions, but not for providing a clearly labeled general framework, conditional guidance, or fillable template."
+}
+]
+}
+]
+}
+
+---

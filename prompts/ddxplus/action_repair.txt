@@ -1,0 +1,16 @@
+Your previous response for the current temporary summary failed validation:
+{{VALIDATION_ERRORS}}
+
+Using the original inputs and rules, return the complete corrected JSON object with an actions array, not a patch or an explanation outside JSON. Each action must contain action, target_ids, reason, and summaries. This is a single-question comparison; do not add candidate_ids or other temporary summaries.
+
+Preserve valid parts of the decision. If the reported error exposes an unjustified or disallowed action, reconsider that invalid action from the original evidence. Do not invent targets or summary text to satisfy a count, and do not change the action name merely to make an otherwise unchanged payload pass validation. Do not change a valid, unrelated operation, the supplied reference answer, or the recorded score; do not guess a null extracted choice.
+
+For the reported failure, apply the relevant checks:
+- keep requires at least one real target that already covers the candidate or is its same-question previous version, and no summaries. If old summaries are unrelated and the candidate supplies a valid new connection, use add with no targets and one summary. If the candidate itself is unusable, reconsider reject; unrelatedness alone is not a reason to reject.
+- merge requires at least two distinct eligible old targets. The temporary candidate does not count as an old target. With one same-question previous version, choose keep when there is no substantive improvement or update when a specific correction is supported. Do not automatically turn a one-target merge into update.
+- Copy only IDs actually present in the original input. An unrelated or fabricated ID cannot repair a missing target.
+
+Recheck the action, reason, target IDs, and summary count together against the original route and action rules. Same-question history targets permit only keep or update, including when other-question summaries also appear in the input.
+{{ROUTE_REMINDER}}
+
+Output JSON only.

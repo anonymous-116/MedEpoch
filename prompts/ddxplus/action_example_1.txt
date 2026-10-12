@@ -1,0 +1,52 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is unrelated
+
+Constructed relationship example using condensed question-answer content from supplied DDxPlus cases 257 (ddxplus-000257) and 583 (ddxplus-000583); the action is illustrative, not an observed run result. The existing summary is unrelated to the candidate's specific condition-answer connection despite shared weakness terminology. Both summaries are newly written from the questions and reference answers, not copied from generated probe memories.
+
+### Input
+
+Current question: A 15-year-old girl reports a recent viral infection, weakness in both arms and/or both legs, sensory symptoms in the feet and recently in both arms and legs and around the mouth, and weakness or paralysis on one side of the face that may still be present or may have resolved. Which diagnosis should be selected?
+Reference answer: guillain-barré syndrome.
+
+## Temporary Summary
+
+Summary:
+
+For a 15-year-old girl reporting a recent viral infection, weakness in both arms and/or both legs, numbness, loss of sensation or tingling in the feet, recent sensory symptoms in both arms and legs and around the mouth, and a history of weakness or paralysis on one side of the face that may still be present or may have resolved, the reference diagnosis is guillain-barré syndrome.
+
+Applicable Conditions:
+
+Applicable to diagnosis-selection questions combining the reported recent infection, limb weakness, sensory symptoms, and facial-weakness history. Do not add an ascending sequence, areflexia, bilateral facial palsy, or confirmed current facial weakness, none of which is explicitly supplied. Shared weakness alone does not justify transferring a myasthenia-gravis answer.
+
+## Summary from Another Question
+
+ID: `1`
+
+Summary:
+
+For a 60-year-old man reporting double vision, difficulty opening or raising one or both eyelids, jaw pain or weakness, muscle weakness increasing with fatigue and/or stress, and a family history of myasthenia gravis, the reference diagnosis is myasthenia gravis.
+
+Applicable Conditions:
+
+Applicable to diagnosis-selection questions with this ocular, jaw, and fatigue/stress-related weakness pattern and the reported family history. Preserve the alternatives in jaw pain or weakness and one or both eyelids. Do not infer normal sensation or reflexes from their omission, or transfer this answer to every question mentioning weakness.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate supplies a new diagnosis connection involving a recent infection, limb weakness, sensory symptoms, and facial-weakness history. Summary 1 concerns a different ocular, jaw, and fatigue/stress-related weakness profile with a myasthenia-gravis reference. Shared weakness does not establish the same conditions or answer and does not justify confirm or merge. Leave Summary 1 untouched and store the supported candidate with add; unrelatedness does not justify keep or reject in place of storing it.",
+      "summaries": [
+        {
+          "summary": "For a 15-year-old girl reporting a recent viral infection, weakness in both arms and/or both legs, numbness, loss of sensation or tingling in the feet, recent sensory symptoms in both arms and legs and around the mouth, and a history of weakness or paralysis on one side of the face that may still be present or may have resolved, the reference diagnosis is guillain-barré syndrome.",
+          "applicable_conditions": "Applicable to diagnosis-selection questions combining the reported recent infection, limb weakness, sensory symptoms, and facial-weakness history. Do not add an ascending sequence, areflexia, bilateral facial palsy, or confirmed current facial weakness, none of which is explicitly supplied. Shared weakness alone does not justify transferring a myasthenia-gravis answer."
+        }
+      ]
+    }
+  ]
+}
+
+---

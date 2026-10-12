@@ -1,0 +1,97 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied mediq case mediq-0555, with an unrelated summary based on mediq-0767. Previous versions below illustrate decisions and are not claimed as observed database states. Each example has its own output.
+
+### Input
+
+Current question: A researcher wants to detect HIF-1α in renal cell carcinoma under normoxic conditions. Which statement about the blotting experiment is most likely to be true?
+Reference answer: A Western blot will show increased HIF-1α compared to a normoxic control.
+
+## Temporary Summary
+
+Summary:
+
+For the experiment asking what a blot would show when detecting HIF-1α in renal cell carcinoma under normoxic conditions, the reference answer is that a Western blot will show increased HIF-1α compared to a normoxic control. Preserve both the detection method and the normoxic comparison.
+
+Applicable Conditions:
+
+Applicable to expected-result questions about the described HIF-1α experiment in renal cell carcinoma under normoxia compared with a normoxic control. Do not transfer this result to RNA or DNA abundance or to a hypoxic control. The question asks for an expected experimental result; no measured blot image is supplied.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For the experiment asking what a blot would show when detecting HIF-1α in renal cell carcinoma under normoxic conditions, the reference answer is that a Western blot will show increased HIF-1α compared to a normoxic control. Preserve both the detection method and the normoxic comparison.
+
+Applicable Conditions:
+
+Applicable to expected-result questions about the described HIF-1α experiment in renal cell carcinoma under normoxia compared with a normoxic control. Do not transfer this result to RNA or DNA abundance or to a hypoxic control. The question asks for an expected experimental result; no measured blot image is supplied.
+
+## Summary from Another Question
+
+ID: `2`
+
+Summary:
+
+For a question asking what the Kozak consensus sequence is, the reference answer is an initiator of translation proximal to the start codon. Preserve the requested definition and translation-initiation function.
+
+Applicable Conditions:
+
+Applicable to definition or function questions about the Kozak sequence near the start codon. This does not specify an experimental blot result or the abundance of a particular protein.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same experiment, normoxic conditions, comparison group, and reference answer. The candidate adds no substantive improvement, so keep Summary 1 with no replacement text. It is the same question, not independent confirmation. Summary 2 defines the Kozak sequence and requires no operation; shared molecular-biology terminology does not justify merging these decision points.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately overbroad version. It is a constructed defective example, not endorsed guidance or an observed memory:
+
+ID: `1`
+
+Summary:
+
+For any experiment involving HIF-1α, a Western blot will show increased HIF-1α regardless of oxygen conditions or the control group.
+
+Applicable Conditions:
+
+Applicable to all HIF-1α experiments under any oxygen conditions and against any control.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 incorrectly extends a specific renal-cell-carcinoma experiment to any HIF-1α experiment and discards the normoxic sample and normoxic control. Replace it with the bounded expected-result connection supported by the current question and reference answer. Restoring these comparison conditions is substantive, unlike Example A. Leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For the experiment asking what a blot would show when detecting HIF-1α in renal cell carcinoma under normoxic conditions, the reference answer is that a Western blot will show increased HIF-1α compared to a normoxic control. Preserve both the detection method and the normoxic comparison.",
+          "applicable_conditions": "Applicable to expected-result questions about the described HIF-1α experiment in renal cell carcinoma under normoxia compared with a normoxic control. Do not transfer this result to RNA or DNA abundance or to a hypoxic control. The question asks for an expected experimental result; no measured blot image is supplied."
+        }
+      ]
+    }
+  ]
+}
+
+---

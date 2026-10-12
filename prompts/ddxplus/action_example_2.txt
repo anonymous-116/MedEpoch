@@ -1,0 +1,97 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied DDxPlus case 764 (ddxplus-000764), with unrelated case 583 (ddxplus-000583). Previous versions below illustrate decisions and are not claimed as observed Epoch database states. Example B deliberately illustrates an overbroad version of the incorrect viral-pharyngitis conclusion in the original response; it is not endorsed medical guidance. Each example has its own output.
+
+### Input
+
+Current question: A 76-year-old male smoker reports coughing up blood, contact with a similarly symptomatic person within two weeks, living with at least four people, daycare attendance or work, and burning, nonradiating pain at both tonsils, the thyroid cartilage, the pharynx, and under the jaw. Pain intensity, localization precision, and appearance-speed responses are 5, 9, and 1, respectively; the travel response for the past four weeks is North America. Which diagnosis should be selected?
+Reference answer: possible nstemi / stemi.
+
+## Temporary Summary
+
+Summary:
+
+For a 76-year-old male smoker with coughing up blood, contact with a similarly symptomatic person within the past two weeks, a report of living with at least four people, and daycare attendance or work, the reference diagnosis choice is possible nstemi / stemi when burning, nonradiating pain is reported at both tonsils, the thyroid cartilage, the pharynx, and under the jaw. The recorded pain intensity, localization precision, and appearance-speed responses are 5, 9, and 1, respectively; the travel response for the past four weeks is "North America". This bounded answer retains the uncertainty expressed by "possible" and does not establish a confirmed infarction or its mechanism.
+
+Applicable Conditions:
+
+Applicable to diagnosis-selection questions matching this older male smoker's combined reported evidence profile. Do not infer chest pain, radiation to the jaw, ECG changes, troponin results, a cause of bleeding, or a travel-related risk category. The reference choice does not establish that age, smoking, throat pain, or coughing up blood by itself determines a cardiac diagnosis.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For a 76-year-old male smoker with coughing up blood, contact with a similarly symptomatic person within the past two weeks, a report of living with at least four people, and daycare attendance or work, the reference diagnosis choice is possible nstemi / stemi when burning, nonradiating pain is reported at both tonsils, the thyroid cartilage, the pharynx, and under the jaw. The recorded pain intensity, localization precision, and appearance-speed responses are 5, 9, and 1, respectively; the travel response for the past four weeks is "North America". This bounded answer retains the uncertainty expressed by "possible" and does not establish a confirmed infarction or its mechanism.
+
+Applicable Conditions:
+
+Applicable to diagnosis-selection questions matching this older male smoker's combined reported evidence profile. Do not infer chest pain, radiation to the jaw, ECG changes, troponin results, a cause of bleeding, or a travel-related risk category. The reference choice does not establish that age, smoking, throat pain, or coughing up blood by itself determines a cardiac diagnosis.
+
+## Summary from Another Question
+
+ID: `2`
+
+Summary:
+
+For a 60-year-old man reporting double vision, difficulty opening or raising one or both eyelids, jaw pain or weakness, muscle weakness increasing with fatigue and/or stress, and a family history of myasthenia gravis, the reference diagnosis is myasthenia gravis.
+
+Applicable Conditions:
+
+Applicable to diagnosis-selection questions with this ocular, jaw, and fatigue/stress-related weakness pattern and the reported family history. Preserve the alternatives in jaw pain or weakness and one or both eyelids. Do not infer normal sensation or reflexes from their omission, or transfer this answer to every question mentioning weakness.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same reported evidence profile, diagnosis decision, and qualified reference choice, possible nstemi / stemi. The candidate adds no substantive improvement, so keep Summary 1 without replacement text. This is the same question, not independent confirmation. Summary 2 concerns a distinct myasthenia-gravis profile and requires no operation. Do not update identical text or merge/split a same-question version.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately incorrect and overbroad version:
+
+ID: `1`
+
+Summary:
+
+In every patient with coughing up blood, throat pain, and recent contact with a similarly symptomatic person, the diagnosis is viral pharyngitis; age, smoking, and the remaining evidence do not matter.
+
+Applicable Conditions:
+
+Applicable to all diagnosis questions combining coughing up blood, throat pain, and symptomatic contact.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 substitutes viral pharyngitis for the current reference choice and overgeneralizes from throat pain, bleeding, and symptomatic contact while discarding the rest of the reported profile. The current question and reference support a bounded replacement preserving possible nstemi / stemi, not a confirmed infarction or a new causal explanation. Restore the distinguishing evidence and uncertainty, and leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For a 76-year-old male smoker with coughing up blood, contact with a similarly symptomatic person within the past two weeks, a report of living with at least four people, and daycare attendance or work, the reference diagnosis choice is possible nstemi / stemi when burning, nonradiating pain is reported at both tonsils, the thyroid cartilage, the pharynx, and under the jaw. The recorded pain intensity, localization precision, and appearance-speed responses are 5, 9, and 1, respectively; the travel response for the past four weeks is \"North America\". This bounded answer retains the uncertainty expressed by \"possible\" and does not establish a confirmed infarction or its mechanism.",
+          "applicable_conditions": "Applicable to diagnosis-selection questions matching this older male smoker's combined reported evidence profile. Do not infer chest pain, radiation to the jaw, ECG changes, troponin results, a cause of bleeding, or a travel-related risk category. The reference choice does not establish that age, smoking, throat pain, or coughing up blood by itself determines a cardiac diagnosis."
+        }
+      ]
+    }
+  ]
+}
+
+---

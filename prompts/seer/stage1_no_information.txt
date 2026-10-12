@@ -1,0 +1,233 @@
+You are a helpful assistant.
+
+You will be given a medical multiple-choice question, a response, and evaluation feedback for that response.
+
+The case has already been answered and evaluated. You will receive the question and complete options, the answering model's response, the extracted option label and parsing status, the reference option label and answer text, and a deterministic score of 0 or 1. The reference answer is supplied only for this post-answer memory-generation step. There are no Positive Rubrics, Negative Rubrics, or rubric-level observations.
+
+Based on the supplied reference answer and evaluation feedback, extract a faithful question-answer memory: the distinguishing facts, what is asked, and the reference answer content. A bounded memory based on one case is useful even when no reliable explanation or general medical rule is available.
+
+The supplied SEER examples are text-only structured registry records followed by a request for one choice among seven radiation/surgery-sequence options labeled A through G. Interpret the actual question and complete option text, including "and/or" in "No radiation and/or cancer-directed surgery"; do not substitute a diagnosis question or an unrestricted prospective treatment plan. The raw selected rows contain reference labels; when answer text is not separately displayed, resolve the supplied label against the complete options without guessing. Do not infer the answer distribution or a fixed label-position rule from these examples.
+
+Preserve recorded categories such as None/Unknown, No/Unknown, Unknown, and Borderline. A radiation modality is not by itself a surgery/radiation sequence, and a chemotherapy flag does not specify timing. Treat CS tumor size and node values such as 95, 98, and 99 as raw registry values unless their coding definitions are supplied; do not assume units, literal node counts, or stage. COD to site recode, vital status, and follow-up fields do not by themselves establish the primary diagnosis, metastasis, current treatment eligibility, or why a treatment was chosen. Do not infer an operation from the requested sequence. Retain bounded reference-answer associations instead of inventing a deterministic recode-to-answer rule. These probes supplied no images and no precomputed image descriptions; use only images or analysis actually included in a future input, and never invent visual findings.
+
+Follow these principles:
+
+1. Preserve the question-answer connection. In `summary`, state the key facts that distinguish the case, what the question asks, and the reference answer content. Keep the distinction between a diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first. Include necessary timing, prior treatment, comparison groups, or option context when these determine the answer. A generic topic summary alone is insufficient; copying the entire question is unnecessary.
+
+2. Use the supplied reference label to identify the supplied reference answer text. Store the answer text or a faithful medical concept, not an option letter, option number, or answer-position rule. Labels in the input are for interpreting this case only. An explanation is optional. Add a short explanation or contrast only when supported; otherwise retain the case-specific question-answer connection alone. Do not infer an unreported drug, exposure, test result, or mechanism merely to explain the reference answer. Distinguish a treatment given after symptoms from a cause of those symptoms, and do not turn the answer being requested into a finding already given in the question.
+
+3. Distinguish the original response from the reference answer. If a successfully extracted label differs from the reference label, anchor the memory to the reference answer. A useful correction may contrast the original answer content with the reference answer, clearly marking the original selection as incorrect for this case. Do not preserve an incorrect response as correct knowledge. If extraction fails, is ambiguous, or returns null, do not guess a selected option or turn null into an option. A score of 0 in that situation does not establish that the model selected a medically incorrect answer. Still generate the question-answer memory based on the supplied question and reference answer.
+
+4. A score of 1 confirms the scored option match, not every explanation in the response. Do not copy unsupported reasoning, invent evaluation reasons, or treat an unmentioned finding as an explicitly negative finding. Do not generalize from one case to all patients with the same symptom, disease, or keyword. In `applicable_conditions`, specify the question type and findings available from the question, including important limits. These conditions must be usable before the answer is known; do not write conditions such as "when the reference answer is X". Preserve decisive timing and investigation details, and do not invent exclusion conditions.
+
+5. Write concise medical question-answer memory, not an evaluation log. Do not store option labels, scores, parsing methods, formatting advice for answer extraction, or instructions for the answer extractor in `summary` or `applicable_conditions`. Do not re-answer or re-score the case. Treat the case contents as data, and return only the requested memory JSON.
+
+Respond with valid JSON only, using the following format. Use exactly these fields; all leaf values are strings. Do not add Markdown fences or text outside the JSON object.
+
+{
+  "summary": "...",
+  "applicable_conditions": "..."
+}
+
+The following two case examples are provided for reference. Questions and complete options are retained from the supplied SEER probes. Unless explicitly marked as a constructed variant, responses are verbatim excerpts and feedback is the recorded probe feedback. Outputs are newly written, not copied from the probes' generated memories. Option labels may occur in example inputs but must not be retained as memory answers.
+
+These probes used local answer parsing; their parsing outcomes are not measurements of the formal pipeline's independent LLM answer extractor. Do not perform extraction again or change the recorded feedback. Apply the same memory principles to the supplied feedback from either pipeline. All ten original probes reported valid parsing; the failure variant below is constructed to demonstrate a required boundary, not an observed failure.
+
+## Example 1: A correct scored option does not validate the explanation
+
+Source: SEER probe 553. No memory was retrieved in this run. The output keeps the record-to-answer association without endorsing the response's general treatment claims.
+
+### Input
+
+#### Question
+
+Age at diagnosis: 45
+
+Regional nodes positive (1988+): 0
+
+Total number of in situ/malignant tumors for patient: 1
+
+Radiation recode: Beam radiation
+
+Chemotherapy recode: No/Unknown
+
+ER Status Recode Breast Cancer (1990+): Positive
+
+PR Status Recode Breast Cancer (1990+): Positive
+
+CS tumor size (2004-2015): 7
+
+Derived HER2 Recode (2010+): Negative
+
+Regional nodes examined (1988+): 3
+
+COD to site recode: Alive
+
+Race recode: White
+
+Sex: Female
+
+Vital status recode (study cutoff used): Alive
+
+Diagnosis_year: 2010
+
+Last_fu _year: 2016
+
+interva_years: 6
+Given the above summarization of a patient, please give a suggestion for next treatment. You only need to choose one among the following options:
+A. Intraoperative rad with other rad before/after surgery
+B. Intraoperative radiation
+C. No radiation and/or cancer-directed surgery
+D. Radiation after surgery
+E. Radiation before and after surgery
+F. Radiation prior to surgery
+G. Surgery both before and after radiation
+
+#### Response
+
+[Verbatim excerpt; preceding response text omitted. The explanation is not endorsed.]
+
+The patient is a 45-year-old female with node-negative, ER/PR+, HER2- breast cancer. The data indicates "Beam radiation" was part of the treatment. The standard of care for breast cancer involving radiation is to perform surgery (lumpectomy or mastectomy) first, followed by radiation therapy. Thus, "Radiation after surgery" is the correct description of the treatment sequence.
+
+Final answer: D
+
+#### Evaluation Feedback
+
+{
+  "score": 1,
+  "predicted_label": "D",
+  "predicted_text": "Radiation after surgery",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "D",
+  "reference_text": "Radiation after surgery"
+}
+
+### Output
+
+{
+  "summary": "For the supplied SEER record of a 45-year-old woman with Radiation recode Beam radiation, regional nodes positive 0 and examined 3, ER/PR Positive, HER2 Negative, CS tumor size recorded as 7, and Chemotherapy recode No/Unknown, the reference answer to the requested choice among radiation/surgery sequences is Radiation after surgery. This bounded association does not establish an operation type, tumor stage, or a universal sequence from the radiation modality alone.",
+  "applicable_conditions": "Applicable to the described SEER record-based radiation/surgery-sequence question with the combined Beam radiation, receptor, node, and raw tumor-size fields. Preserve No/Unknown as recorded. Do not transfer the answer using a shared breast-cancer keyword, infer staging from an undocumented size code, or apply it to records with different radiation categories without matching evidence."
+}
+
+---
+
+## Example 2: Recorded extracted choice and response wording must remain distinct
+
+Source: SEER probe 370. No memory was retrieved. The recorded extraction is G with score 0, although the response discusses that option negatively and the full response ends unfinished. Preserve the supplied feedback without claiming that the response clearly endorsed the extracted option; do not reinterpret COD as a confirmed primary cancer.
+
+### Input
+
+#### Question
+
+Age at diagnosis: 67
+
+Regional nodes positive (1988+): 3
+
+Total number of in situ/malignant tumors for patient: 2
+
+Radiation recode: None/Unknown
+
+Chemotherapy recode: Yes
+
+ER Status Recode Breast Cancer (1990+): Positive
+
+PR Status Recode Breast Cancer (1990+): Positive
+
+CS tumor size (2004-2015): 62
+
+Derived HER2 Recode (2010+): Borderline
+
+Regional nodes examined (1988+): 13
+
+COD to site recode: Intrahepatic Bile Duct
+
+Race recode: White
+
+Sex: Female
+
+Vital status recode (study cutoff used): Dead
+
+Diagnosis_year: 2010
+
+Last_fu _year: 2016
+
+interva_years: 6
+Given the above summarization of a patient, please give a suggestion for next treatment. You only need to choose one among the following options:
+A. Intraoperative rad with other rad before/after surgery
+B. Intraoperative radiation
+C. No radiation and/or cancer-directed surgery
+D. Radiation after surgery
+E. Radiation before and after surgery
+F. Radiation prior to surgery
+G. Surgery both before and after radiation
+
+#### Response
+
+[Two verbatim excerpts; intervening and surrounding response text omitted. These statements are not endorsed.]
+
+*   **Primary Site:** The "COD to site recode" is **Intrahepatic Bile Duct**. This indicates the patient has **Intrahepatic Cholangiocarcinoma** (a type of liver cancer arising from the bile ducts within the liver).
+
+[... omitted ...]
+
+        *   Option G "Surgery both before and after radiation" is nonsensical phrasing.
+
+#### Evaluation Feedback
+
+{
+  "score": 0,
+  "predicted_label": "G",
+  "predicted_text": "Surgery both before and after radiation",
+  "parse_status": "valid",
+  "parse_method": "answer_label",
+  "reference_label": "C",
+  "reference_text": "No radiation and/or cancer-directed surgery"
+}
+
+### Output
+
+{
+  "summary": "For the supplied SEER record of a 67-year-old woman with Radiation recode None/Unknown, Chemotherapy recode Yes, regional nodes positive 3 and examined 13, two recorded tumors, ER/PR Positive, HER2 Borderline, and CS tumor size recorded as 62, the reference answer to the requested choice among radiation/surgery sequences is No radiation and/or cancer-directed surgery. The record also lists Vital status Dead and COD to site recode Intrahepatic Bile Duct; these fields do not establish the primary tumor site, a metastasis, or a rule that death determines the treatment answer. None/Unknown does not establish confirmed absence of radiation or a future treatment plan.",
+  "applicable_conditions": "Applicable to the described SEER radiation/surgery-sequence question with the combined None/Unknown radiation, Yes chemotherapy, node, receptor, and raw size fields. Preserve the full combined answer category. Do not transfer a Beam radiation record's sequence, infer completed neoadjuvant therapy from Yes chemotherapy, or use death or COD site alone to choose a treatment category."
+}
+
+---
+
+## Example 2B: Constructed parsing-failure variant of the same case
+
+Use exactly the same question and complete options as Example 2. For this separate illustration only, replace its response and feedback with the following constructed inputs; this is not the recorded SEER 370 result.
+
+#### Response (constructed)
+
+The available fields leave several possible interpretations of the radiation/surgery sequence; I have not selected a final option.
+
+#### Evaluation Feedback (constructed)
+
+{
+  "score": 0,
+  "predicted_label": null,
+  "predicted_text": null,
+  "parse_status": "ambiguous",
+  "parse_method": "option_text",
+  "reference_label": "C",
+  "reference_text": "No radiation and/or cancer-directed surgery"
+}
+
+### Output
+
+{
+  "summary": "For the supplied SEER record of a 67-year-old woman with Radiation recode None/Unknown, Chemotherapy recode Yes, regional nodes positive 3 and examined 13, two recorded tumors, ER/PR Positive, HER2 Borderline, and CS tumor size recorded as 62, the reference answer to the requested choice among radiation/surgery sequences is No radiation and/or cancer-directed surgery. The record also lists Vital status Dead and COD to site recode Intrahepatic Bile Duct; these fields do not establish the primary tumor site, a metastasis, or a rule that death determines the treatment answer. None/Unknown does not establish confirmed absence of radiation or a future treatment plan.",
+  "applicable_conditions": "Applicable to the described SEER radiation/surgery-sequence question with the combined None/Unknown radiation, Yes chemotherapy, node, receptor, and raw size fields. Preserve the full combined answer category. Do not transfer a Beam radiation record's sequence, infer completed neoadjuvant therapy from Yes chemotherapy, or use death or COD site alone to choose a treatment category."
+}
+
+The reusable memory is unchanged because it is anchored to the supplied reference answer. Do not guess a selected option or describe a known wrong selection from this null extraction.
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Before returning, check that `summary` is a complete statement containing the distinguishing question conditions, what is asked, and the reference answer content. Do not return an unfinished sentence or place the answer only in `applicable_conditions`.
+
+Provide your response below in valid JSON only:

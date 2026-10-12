@@ -1,0 +1,187 @@
+You are a helpful assistant.
+
+You will be given a medical question, several pieces of reference Information, a response, and evaluation criteria for that response.
+
+The evaluation criteria are divided into two groups:
+
+* Positive Rubrics describe desirable content or behavior in the response.
+* Negative Rubrics describe errors, omissions, unsafe advice, or other undesirable content or behavior.
+
+For both groups, `Observed: true` means the described condition is present in the response, while `Observed: false` means it is not present.
+
+Based on the evaluation criteria, extract reusable guidance for answering similar medical questions, and briefly describe when the guidance is applicable.
+
+Also assess whether and how each provided Information item appears to have influenced the response. Do not infer use from topical similarity alone. Give an overall assessment and briefly describe the role of each Information item.
+
+Return exactly one `information_effects` entry for every provided Information item, preserving its identifier.
+
+Respond with valid JSON only, using the following format:
+
+{
+"summary": "...",
+"applicable_conditions": "...",
+"information_usage": {
+"overall": "...",
+"information_effects": [
+{
+"information_id": "Information 1",
+"analysis": "..."
+}
+]
+}
+}
+
+The following two examples are provided for reference.
+
+---
+
+## Example 1
+
+### Input
+
+#### Question
+
+A 2-year-old child has not received any vaccines since 9 months of age. What vaccines are recommended?
+
+#### Information
+
+##### Information 1
+
+For toddler immunization questions, ask for the country or region, the child’s exact age, prior vaccination history, missed doses, and special health conditions. When these details are incomplete, avoid presenting a definitive individualized schedule.
+
+Vaccines that may require review in children approximately 1 to 3 years old include DTaP, IPV, MMR, varicella, Hib, pneumococcal conjugate vaccine, hepatitis A, hepatitis B, and influenza.
+
+Applicable when answering routine or delayed-vaccination questions for toddlers.
+
+##### Information 2
+
+For childhood immunization-record review, obtain the complete vaccination history, including vaccine names, dose numbers, administration dates, and relevant medical conditions before deciding which exact doses are required.
+
+When the record is incomplete, ask for the missing information and avoid unsupported dose counts or intervals. Provide safe general guidance when sufficient information is available.
+
+Applicable when reviewing an incomplete childhood vaccination record or determining whether catch-up doses are needed.
+
+#### Response
+
+To give a precise recommendation, please provide the country or region, the child’s exact age, the vaccines received before 9 months, and any special health conditions.
+
+In general, vaccines that may need catch-up review at this age include DTaP, IPV, MMR, varicella, Hib, pneumococcal conjugate vaccine, hepatitis A, hepatitis B, and influenza. The exact number and timing of doses depend on the prior record and the applicable local schedule.
+
+#### Evaluation Criteria
+
+##### Positive Rubrics
+
+* The response asks for the country or region. — **Observed: true**
+* The response asks for the complete prior vaccination history. — **Observed: true**
+* The response acknowledges that catch-up recommendations vary by jurisdiction. — **Observed: true**
+* The response provides safe general information while avoiding an unsupported exact schedule. — **Observed: true**
+* The response identifies vaccines that commonly require review in a 2-year-old with missed doses. — **Observed: true**
+* The response explains that a delayed vaccine series usually does not need to be restarted. — **Observed: false**
+* The response prioritizes vaccines for the first visit according to immediate benefit and missed-dose risk. — **Observed: false**
+* The response provides an official catch-up schedule source when using a U.S. example. — **Observed: false**
+
+##### Negative Rubrics
+
+* The response provides incorrect vaccine intervals. — **Observed: false**
+* The response presents one jurisdiction’s schedule as universally applicable. — **Observed: false**
+* The response gives an unnecessarily long answer. — **Observed: false**
+
+### Output
+
+{
+"summary": "For childhood catch-up vaccination questions, first obtain the country or region, the child’s exact age, the complete prior vaccination record, administration dates, and relevant medical conditions. Use the official catch-up schedule for the applicable jurisdiction.\n\nExplain that delayed or interrupted vaccine series generally do not need to be restarted. Continue from valid previous doses using the child’s current age, minimum ages, and minimum intervals. When the prior record is incomplete, avoid unsupported exact dose counts or dates, but still provide safe general information about vaccines that commonly require review.\n\nFor a 2-year-old child with missed vaccinations, review the actual record for DTaP, IPV, Hib, pneumococcal conjugate vaccine, hepatitis B, MMR, varicella, hepatitis A, and influenza. Prioritize the first visit according to immediate protection, risk from missed doses, interval eligibility, and practical administration limits. Provide an official local schedule source when detailed planning is requested.",
+"applicable_conditions": "Applicable to delayed, interrupted, or incomplete childhood vaccination questions, especially for toddlers whose previous doses, administration dates, jurisdiction, or relevant medical conditions are not fully known.",
+"information_usage": {
+"overall": "The Information was used constructively. It helped the response ask for the missing context, avoid an unsupported exact schedule, and still provide a useful general list of vaccines. The response could be improved by adding the no-restart principle, first-visit priorities, and an official jurisdiction-specific source.",
+"information_effects": [
+{
+"information_id": "Information 1",
+"analysis": "This Information supplied age-relevant vaccine categories and supported the general catch-up list. It also encouraged the response to ask for jurisdiction, age, prior doses, and health conditions."
+},
+{
+"information_id": "Information 2",
+"analysis": "This Information helped prevent unsupported dose counts or intervals and supported asking for the complete vaccination history. It was used appropriately because the response still provided safe general guidance."
+}
+]
+}
+}
+
+---
+
+## Example 2
+
+### Input
+
+#### Question
+
+A 9-year-old patient has missed several vaccinations. Create a formal catch-up-plan note template using the CDC schedule, including dose fields and minimum intervals.
+
+#### Information
+
+##### Information 1
+
+For childhood immunization-record review, obtain the complete vaccination history, including vaccine names, dose numbers, dates, age at administration, and relevant medical conditions before deciding which exact doses are required.
+
+When these details are absent, do not provide definitive individualized dose counts or schedules.
+
+Applicable when reviewing an incomplete childhood vaccination record or determining exact catch-up requirements.
+
+##### Information 2
+
+For toddler immunization questions, ask for the country or region, exact age, prior vaccination history, missed doses, and special health conditions before providing an individualized schedule.
+
+Avoid presenting an overly certain schedule when these details are unavailable.
+
+Applicable primarily to routine vaccination tables or overviews for children approximately 1 to 3 years old.
+
+#### Response
+
+Please provide the patient’s complete vaccination history, including all vaccine names and dates, as well as any special health conditions. Once this information is available, I can create the catch-up-plan note and list the required doses and intervals.
+
+#### Evaluation Criteria
+
+##### Positive Rubrics
+
+* The response requests the complete prior vaccination record. — **Observed: true**
+* The response provides a usable catch-up-plan template. — **Observed: false**
+* The response includes patient demographics and documentation fields. — **Observed: false**
+* The response includes vaccine-by-vaccine dose fields and minimum-interval fields. — **Observed: false**
+* The response includes a visit-by-visit schedule section. — **Observed: false**
+* The response asks about doses received elsewhere and prior disease history such as varicella. — **Observed: false**
+* The response asks about previous adverse reactions and conditions that may alter vaccination. — **Observed: false**
+* The response provides an official CDC schedule source. — **Observed: false**
+* The response is suitable for a healthcare professional. — **Observed: false**
+
+##### Negative Rubrics
+
+* The response invents exact missing doses without a vaccination record. — **Observed: false**
+* The response fails to complete parts of the task that can be completed safely despite missing information. — **Observed: true**
+* The response is repetitive or unnecessarily long. — **Observed: false**
+
+### Output
+
+{
+"summary": "For school-age childhood catch-up planning, obtain the complete vaccination record before determining the exact missing doses. Review vaccine names, dose numbers, administration dates, age at administration, doses received elsewhere, prior disease history such as varicella, previous adverse reactions, contraindications, and medical conditions that may alter vaccine selection or timing.\n\nWhen exact patient-specific information is unavailable, do not invent missing doses or definitive dates. However, a general catch-up-plan template can still be provided safely. The template should include patient demographics, jurisdiction, source guideline, prior-dose documentation, vaccine-by-vaccine dose and minimum-interval fields, a visit-by-visit schedule, safety notes, clinician name, signature, and date.\n\nClearly distinguish the fillable template from the final individualized plan. State that the exact entries must be completed after reviewing the prior record and the current CDC catch-up schedule. Provide an official CDC source when the user specifically requests a CDC-based plan.",
+"applicable_conditions": "Applicable when a clinician or other healthcare professional requests a formal childhood catch-up-plan note, documentation template, or scheduling framework, especially for a school-age child whose complete prior vaccination record is not yet available.",
+"information_usage": {
+"overall": "The Information increased caution but was applied too rigidly. The response correctly avoided inventing exact doses, but it treated the missing record as a reason not to provide any template. A safer and more useful approach would be to provide a conditional fillable template first, then request the missing record for the final individualized plan.",
+"information_effects": [
+{
+"information_id": "Information 1",
+"analysis": "This Information correctly supported requesting the complete vaccination record before determining exact missing doses. It was used too broadly because the restriction on individualized scheduling was also applied to the separate task of providing a general template."
+},
+{
+"information_id": "Information 2",
+"analysis": "This Information reinforced the need to ask for age, jurisdiction, and vaccination history, but its toddler population and routine-table task did not match the 9-year-old catch-up-template request. It added caution without contributing useful template content."
+}
+]
+}
+}
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Provide your response below in valid JSON only:

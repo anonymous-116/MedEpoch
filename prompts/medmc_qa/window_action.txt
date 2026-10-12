@@ -1,0 +1,185 @@
+You are a helpful assistant responsible for updating a database of reusable summaries.
+
+Your task is to jointly process the temporary summaries provided below. Use the questions as context, and compare the summaries' content and applicable conditions with each other and with any existing summaries. Compare all relevant summaries across the entire input; retrieval associations do not restrict these comparisons. Produce the database actions needed to preserve reusable, valid, and non-conflicting guidance.
+
+Evaluate temporary summaries and their usage assessments rather than assuming they are correct or better than existing guidance. Greater length or specificity alone does not justify an update.
+
+For medical multiple-choice memory, preserve the connection between the distinguishing question conditions, what is being asked, and the reference answer content. A diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first are different decision points. For medmc_qa, also distinguish contact type, cusp count, cusp function, tooth-surface lobe description, shape, named structure, biochemical precursor, and the direction of a sterilization-method comparison. Preserve tooth, arch, and surface qualifiers and negative wording such as "not" or "except". For a statement selected as the false exception, retain its rejected status instead of asserting it as fact. For a negative entity-identification question, retain the negated property with the selected entity. An aggregate answer such as "All of these" or "None of the above" needs the referenced statement content and the question's polarity; do not store it alone or infer a letter or position preference. If the wording, options, and reference leave the medical meaning unresolved, retain only their bounded question-answer relation with that limitation visible, without guessing a typo repair. Keep clinically decisive details, treatment timing, comparison groups, and necessary option context; do not discard a useful question-answer connection merely because it originated from one case. Incidental identifiers or verbatim benchmark wording are not the reusable knowledge. Store answer content or medical concepts, not option letters or answer-position rules.
+
+Use only the question, answer, reference, evaluation feedback, and Information usage assessments actually supplied. Do not require missing Rubrics or invent missing evidence. Distinguish the original response, the extracted choice, and the reference answer. An extracted choice that disagrees with the reference is not correct knowledge; a null or ambiguous extraction is not a known wrong choice. A score of 1 supports the scored label match, not every explanation; a recorded 0 caused by extraction failure does not by itself invalidate medical guidance. Keep extraction behavior and scores out of reusable summary text.
+
+Compare answer meanings together with their conditions and question types. Different option letters need not mean different answers, and identical letters need not mean identical answers. Different conclusions under different conditions are not automatically a conflict. A shared disease or keyword alone does not justify merging distinct decision points. Information usage assessments may suggest an applicability problem but do not establish causality merely from retrieval, wording overlap, or a score change. Independent support must concern the same core question-answer connection and applicable conditions; repetition, another version of the same question, or a copied explanation does not supply it.
+
+When consolidating compatible question-answer memories, retain each supported condition-answer association rather than replacing them with a broad topic description. Candidate IDs are identifiers, even when written as letters; preserve them in `candidate_ids` and do not confuse them with option labels. Do not change the action rules below to consolidate candidates: without existing targets, consolidation uses `add`, not `merge`.
+
+Each temporary summary has a temporary ID. Each action, including `reject`, must list one or more supporting temporary IDs in `candidate_ids`. A temporary summary may support more than one compatible action, for example confirming an existing summary while also adding distinct new guidance. Every temporary ID must appear in at least one action.
+
+Use the following actions:
+
+* `add`: One or more temporary summaries contain reusable guidance not adequately expressed by an existing summary. Create one complete new summary.
+* `keep`: The temporary summaries do not materially improve a targeted existing summary. This action does not modify its text.
+* `confirm`: The temporary summaries provide independent support for the core content and conditions of one or more existing summaries. This action does not modify their text. A temporary summary from the same question as an existing summary cannot independently confirm that existing summary.
+* `update`: The temporary summaries or their usage assessments reveal a substantive correction, limitation, exception, priority, or applicability change to one existing summary. Produce one complete replacement summary.
+* `merge`: The temporary summaries and at least two existing summaries describe complementary parts of the same decision point. Produce one complete merged summary.
+* `split`: The temporary summaries and one or more existing summaries contain valid guidance for different conditions. Reorganize all relevant new and old guidance into at least two complete condition-specific summaries.
+* `dispute`: The temporary summaries and one or more existing summaries reach incompatible conclusions under the same conditions, and the available evidence cannot resolve the conflict. Do not overwrite either side.
+* `reject`: The temporary summaries are insufficiently reusable, unsupported, internally inconsistent, too specific to their questions, or mainly reflect dataset artifacts.
+
+Follow these output rules:
+
+* `add`: `target_ids` is empty and `summaries` contains exactly one complete new summary.
+* `keep`: `target_ids` contains the existing summary IDs assessed by this action and `summaries` is empty.
+* `confirm`: `target_ids` contains only existing summary IDs independently supported by at least one of this action's candidates, and `summaries` is empty.
+* `update`: `target_ids` contains exactly one existing summary ID and `summaries` contains exactly one complete replacement summary.
+* `merge`: `target_ids` contains at least two existing summary IDs and `summaries` contains exactly one complete merged summary.
+* `split`: `target_ids` contains all existing summaries involved and `summaries` contains at least two complete condition-specific summaries.
+* `dispute`: `target_ids` contains all conflicting existing summary IDs and `summaries` is empty.
+* `reject`: `target_ids` and `summaries` are empty.
+
+For every action, provide a brief, specific `reason` grounded in the input. For `update`, identify what substantively needs to change and which input supports that change. For `merge`, explain the shared decision point, what each targeted existing summary contributes, and how their applicable conditions fit together.
+
+For actions that require new summaries, provide their complete text and applicable conditions in `summaries`.
+
+Use only temporary IDs and existing summary IDs shown in the input. In any summary you create, preserve all valid, relevant, and non-conflicting guidance together with the conditions under which it applies. Do not broaden or narrow applicability without substantive support. Integrate new guidance with retained rules so the result is internally consistent and implements the changes described in the `reason`.
+
+When multiple candidates propose compatible changes to the same existing summary, combine those changes into one appropriate `update`, `merge`, or `split` action and provide the complete resulting summary or summaries. Valid `keep` or `confirm` actions may coexist with that action.
+
+Each existing summary may participate in at most one `update`, `merge`, or `split` action in the window. An existing summary targeted by `dispute` must not be updated, merged, or split in the same window.
+
+If no Existing Summaries section is provided, jointly compare the temporary summaries with each other. Use `add` to store distinct or consolidated reusable guidance and `reject` for unusable candidates; do not use an action that requires an existing target.
+
+Return valid JSON only:
+
+```json
+{
+  "actions": [
+    {
+      "action": "add|keep|confirm|update|merge|split|dispute|reject",
+      "candidate_ids": ["A"],
+      "target_ids": [],
+      "reason": "brief, specific justification based on the input",
+      "summaries": [
+        {
+          "summary": "complete processed summary",
+          "applicable_conditions": "clearly stated applicable conditions"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Example: Correct a harmful generalization and add an unrelated valid connection
+
+Constructed window example using supplied medmc_qa cases 42316 and 43308. Candidate summaries and actions are newly written. Existing Summary 1 quotes the raw memory generated in probe 42316, but assigning it as a same-question previous target in this joint window is illustrative, not an observed Epoch operation. Its answer-position and question-rewriting advice is defective material to assess, not endorsed guidance. Temporary IDs `A` and `B` identify candidates; they are not option labels. Target ID `1` identifies the existing summary.
+
+### Input
+
+## Temporary Summaries
+
+### Candidate A
+
+Source: medmc_qa 42316.
+
+Current question:
+
+Answer the question by choosing one of the options (A, B, C, D).
+Question: All are true about CRISPR cas 9 Except
+Options:
+A. gRNA ensures that the Cas9 enzyme cuts at the right point in the genome
+B. NHEJ repair & HDR pathway
+C. C9 enzyme is used in CRISPR gene editing
+D. All of these
+
+Reference answer: All of these.
+
+Summary:
+
+For the question worded "All are true about CRISPR cas 9 Except", with the statements "gRNA ensures that the Cas9 enzyme cuts at the right point in the genome", "NHEJ repair & HDR pathway", and "C9 enzyme is used in CRISPR gene editing", the supplied reference answer is "All of these", referring collectively to those statements. This is a bounded question-answer relation for that wording and statement set; the supplied material does not resolve the intended meaning of "Except" or establish the truth or falsity of every statement.
+
+Applicable Conditions:
+
+Applicable only to the CRISPR question with the same negative wording and the same statements about gRNA targeting, NHEJ/HDR, and the enzyme written as "C9". The meaning of the aggregate answer remains unresolved beyond this supplied relation. Do not ignore "Except", silently replace "C9", or prefer an aggregate answer in another question merely because it is offered.
+
+### Candidate B
+
+Source: medmc_qa 43308.
+
+Current question:
+
+Answer the question by choosing one of the options (A, B, C, D).
+Question: Prostaglandins are synthesized from:
+Options:
+A. RNA template
+B. Rough endoplasmic reticulum
+C. Polyunsaturated fatty acids
+D. None of the above
+
+Reference answer: Polyunsaturated fatty acids.
+
+Summary:
+
+For a question asking what prostaglandins are synthesized from, the reference answer is polyunsaturated fatty acids. Preserve the requested source material rather than replacing it with a cellular structure or a synthesis template.
+
+Applicable Conditions:
+
+Applicable to biochemical-precursor questions about prostaglandin synthesis, including the supplied alternatives of an RNA template, rough endoplasmic reticulum, polyunsaturated fatty acids, and none of the above. The presence of an aggregate option does not establish that it is the answer.
+
+## Existing Summaries
+
+## Previous Version from Candidate A
+
+ID: `1`
+
+Summary (raw probe-generated text):
+
+When encountering multiple-choice questions with the stem "All are true... Except" where all individual factual options (A, B, C) are scientifically accurate and option D is "All of these," the intended answer is typically D. This indicates a likely typo in the question stem (e.g., it should have read "Which of the following is true?") or a flawed question structure where "All of these" is the only logically consistent choice among true statements. Do not attempt to find a subtle falsehood in the true statements if the "All of these" option is present and the other options are undeniably correct.
+
+Applicable Conditions:
+
+No separate applicability field was supplied with this raw memory; assess the scope asserted in its text.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "candidate_ids": [
+        "A"
+      ],
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Existing Summary 1 turns a single annotated CRISPR question into a rule for ignoring Except, choosing an option position, and assuming a typo and the truth of every statement. Candidate A preserves the supported question-answer relation with all referenced statement contents and makes the unresolved meaning visible. Replace the unsupported generalization with that bounded relation; this is a substantive same-question correction, not independent confirmation.",
+      "summaries": [
+        {
+          "summary": "For the question worded \"All are true about CRISPR cas 9 Except\", with the statements \"gRNA ensures that the Cas9 enzyme cuts at the right point in the genome\", \"NHEJ repair & HDR pathway\", and \"C9 enzyme is used in CRISPR gene editing\", the supplied reference answer is \"All of these\", referring collectively to those statements. This is a bounded question-answer relation for that wording and statement set; the supplied material does not resolve the intended meaning of \"Except\" or establish the truth or falsity of every statement.",
+          "applicable_conditions": "Applicable only to the CRISPR question with the same negative wording and the same statements about gRNA targeting, NHEJ/HDR, and the enzyme written as \"C9\". The meaning of the aggregate answer remains unresolved beyond this supplied relation. Do not ignore \"Except\", silently replace \"C9\", or prefer an aggregate answer in another question merely because it is offered."
+        }
+      ]
+    },
+    {
+      "action": "add",
+      "candidate_ids": [
+        "B"
+      ],
+      "target_ids": [],
+      "reason": "Candidate B supplies the separate relation between prostaglandin synthesis and polyunsaturated fatty acids. Existing Summary 1 and Candidate A address a different CRISPR question. Store the precursor relation independently; an aggregate option appearing in both question formats does not make their answer content or applicability the same.",
+      "summaries": [
+        {
+          "summary": "For a question asking what prostaglandins are synthesized from, the reference answer is polyunsaturated fatty acids. Preserve the requested source material rather than replacing it with a cellular structure or a synthesis template.",
+          "applicable_conditions": "Applicable to biochemical-precursor questions about prostaglandin synthesis, including the supplied alternatives of an RNA template, rough endoplasmic reticulum, polyunsaturated fatty acids, and none of the above. The presence of an aggregate option does not establish that it is the answer."
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+{{TEMPORARY_SUMMARIES}}
+
+{{EXISTING_SUMMARIES}}
+
+Return valid JSON only:

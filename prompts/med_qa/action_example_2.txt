@@ -1,0 +1,97 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied MedQA case 44176. Previous versions below illustrate decisions and are not claimed as observed database states. Each example has its own output.
+
+### Input
+
+Current question: A young adult has ultrasound-confirmed venous thrombosis. After six hours of unfractionated heparin, aPTT has risen only from 26 to 30 seconds. What is the most likely cause?
+Reference answer: Antithrombin III deficiency.
+
+## Temporary Summary
+
+Summary:
+
+For a young adult with ultrasound-confirmed acute venous thrombosis whose aPTT rises only from 26 to 30 seconds after six hours of unfractionated heparin, the reference answer to the most likely cause is Antithrombin III deficiency. The poor aPTT response to heparin is a distinguishing condition for this question-answer connection.
+
+Applicable Conditions:
+
+Applicable to cause questions combining confirmed venous thrombosis with the described inadequate aPTT response to heparin. Do not infer this answer from young age or thrombosis alone.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For a young adult with ultrasound-confirmed acute venous thrombosis whose aPTT rises only from 26 to 30 seconds after six hours of unfractionated heparin, the reference answer to the most likely cause is Antithrombin III deficiency. The poor aPTT response to heparin is a distinguishing condition for this question-answer connection.
+
+Applicable Conditions:
+
+Applicable to cause questions combining confirmed venous thrombosis with the described inadequate aPTT response to heparin. Do not infer this answer from young age or thrombosis alone.
+
+## Summary from Another Question
+
+ID: `2`
+
+Summary:
+
+For a low-risk patient with pleuritic chest pain, the reference answer to the first step in ruling out pulmonary embolism is D-dimer.
+
+Applicable Conditions:
+
+Applicable to first-test questions for low-risk pulmonary embolism evaluation, not the cause of thrombosis with poor heparin response.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same conditions, cause question, and reference answer. The candidate adds no substantive improvement, so keep Summary 1 with no replacement text. It is the same question, not independent confirmation. Summary 2 addresses a different decision point and requires no operation. Do not update identical text or merge/split a same-question version.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately overbroad version:
+
+ID: `1`
+
+Summary:
+
+In every young adult with venous thrombosis, the cause is Antithrombin III deficiency; no heparin-response information is needed.
+
+Applicable Conditions:
+
+Applicable to all young adults with venous thrombosis.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 incorrectly extends this answer to every young adult with thrombosis and discards the heparin-response condition. Replace it with the bounded question-answer connection supported by this case. Restoring that distinguishing condition is substantive, unlike Example A. Leave unrelated Summary 2 unchanged.",
+      "summaries": [
+        {
+          "summary": "For a young adult with ultrasound-confirmed acute venous thrombosis whose aPTT rises only from 26 to 30 seconds after six hours of unfractionated heparin, the reference answer to the most likely cause is Antithrombin III deficiency. The poor aPTT response to heparin is a distinguishing condition for this question-answer connection.",
+          "applicable_conditions": "Applicable to cause questions combining confirmed venous thrombosis with the described inadequate aPTT response to heparin. Do not infer this answer from young age or thrombosis alone."
+        }
+      ]
+    }
+  ]
+}
+
+---

@@ -1,0 +1,55 @@
+You are a helpful assistant responsible for maintaining a database of reusable summaries.
+
+Your task is to decide whether the temporary summary should replace the previous version provided below.
+
+Choose exactly one of the following actions:
+
+- `keep`: The temporary summary does not provide a substantive improvement. Use this action when the differences are limited to wording, organization, emphasis, or minor details, or when the temporary summary is less complete or less reliable. Keep the previous version unchanged.
+
+- `update`: The temporary summary provides a substantive improvement, such as correcting an error, adding an important limitation or exception, removing invalid information, or making the applicable conditions more accurate. Produce one complete replacement summary that preserves all valid and relevant information from the previous version.
+
+Do not update merely because the temporary summary is phrased differently. When the improvement is uncertain or insignificant, choose `keep`.
+
+For medical multiple-choice memory, compare whether each version preserves the distinguishing question conditions, the question's decision point, and the reference answer content. Adding a supported missing condition, correcting an answer-content mismatch, or restoring the distinction between diagnosis, cause, management, and exclusion priority can be substantive. Merely changing option letters, answer formatting, or the recorded score is not a medical improvement. Preserve answer content rather than option labels.
+
+Use reference answers, extraction status, scores, and usage assessments only if supplied. Do not require Rubrics or infer evaluation reasons. A correct scored label does not verify every explanation, and a null or ambiguous extraction does not establish a medically wrong selection. If reference evidence is absent, do not invent it or treat the newer wording as authoritative. Preserve valid question-answer conditions without turning case details into universal rules. Do not store parsing or scoring instructions in the replacement.
+
+For BioASQ yes/no memory, preserve the proposition's named entities, relation, population, stated qualifiers, and affirmative or negative answer. A bare yes/no is insufficient. The same polarity on unrelated propositions does not justify confirmation or merging; opposite polarities about different propositions are not automatically a conflict. Distinguish association from causation or intervention benefit, improvement from guaranteed cure, transcription-splicing processes from splicing speckles, and specific graph-kernel functionality from general graph processing. Do not invent patient-vignette conditions for a short fact question.
+
+Use a supplied reference for its stated proposition, without inventing its rationale or silently changing the question to make it easier to justify. A negative annotation is not merely an unknown answer, but it also does not establish unrestricted nonexistence or a universal negative rule. When an explanation is unsupported, retain the bounded proposition-answer relationship and its limits. Do not promote generated explanations or missing evidence into verified facts, or treat undated software-availability annotations as current inventories. A faithful bounded proposition-answer pair remains useful without a verified mechanism.
+
+These are versions from the same question, so similarity is not independent confirmation. Return exactly one `keep` or `update` action targeting only the ID of the supplied previous version; no other relationship action is allowed on this route.
+
+Return valid JSON only:
+
+{
+  "actions": [
+    {
+      "action": "keep|update",
+      "target_ids": ["previous_summary_id"],
+      "reason": "brief explanation",
+      "summaries": [
+        {
+          "summary": "complete updated summary",
+          "applicable_conditions": "clearly stated applicable conditions"
+        }
+      ]
+    }
+  ]
+}
+
+For `keep`, `summaries` must be empty.
+
+For `update`, `summaries` must contain exactly one complete replacement summary.
+
+## Temporary Summary
+
+{{TEMPORARY_SUMMARY}}
+
+## Previous Version
+
+The following summary was produced from the current question in an earlier round and should be used only for version comparison.
+
+{{PREVIOUS_VERSION}}
+
+Return valid JSON only:

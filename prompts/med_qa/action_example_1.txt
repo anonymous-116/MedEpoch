@@ -1,0 +1,52 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is unrelated
+
+Constructed relationship example using condensed question-answer content from supplied MedQA cases 44063 and 43809; the action is illustrative, not an observed run result.
+
+### Input
+
+Current question: What most likely causes episodic right upper quadrant pain and jaundice with elevated bilirubin/alkaline phosphatase, a 10-mm common bile duct, and gallstones without gallbladder wall thickening or pericholecystic fluid?
+Reference answer: Choledocholithiasis.
+
+## Temporary Summary
+
+Summary:
+
+For a patient with episodic right upper quadrant pain, jaundice, elevated bilirubin and alkaline phosphatase, a 10-mm common bile duct, and gallbladder stones without wall thickening or pericholecystic fluid, the reference answer to the most likely cause of these findings is choledocholithiasis.
+
+Applicable Conditions:
+
+Applicable to cause or diagnosis questions with the described gallstones and bile-duct obstruction pattern. Do not transfer this answer to bowel obstruction with biliary air or to a question asking for a treatment step.
+
+## Summary from Another Question
+
+ID: `1`
+
+Summary:
+
+For an older woman with vomiting, obstipation, dilated bowel with multiple air-fluid levels, and branching radiolucencies in the right infra-diaphragmatic region, the reference answer to the underlying cause is inflammation of the gallbladder wall. The question asks for the cause of this gallstone-ileus presentation.
+
+Applicable Conditions:
+
+Applicable to underlying-cause questions with the combined bowel-obstruction and biliary-air pattern; not isolated gallstones or a next-treatment question.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate supplies a new question-answer connection about bile-duct obstruction. Summary 1 concerns the cause of bowel obstruction with biliary air and does not cover this connection. Leave Summary 1 untouched and store the candidate with add. Unrelatedness does not justify discarding the candidate with keep or reject, and shared gallstone terminology does not justify confirm or merge.",
+      "summaries": [
+        {
+          "summary": "For a patient with episodic right upper quadrant pain, jaundice, elevated bilirubin and alkaline phosphatase, a 10-mm common bile duct, and gallbladder stones without wall thickening or pericholecystic fluid, the reference answer to the most likely cause of these findings is choledocholithiasis.",
+          "applicable_conditions": "Applicable to cause or diagnosis questions with the described gallstones and bile-duct obstruction pattern. Do not transfer this answer to bowel obstruction with biliary air or to a question asking for a treatment step."
+        }
+      ]
+    }
+  ]
+}
+
+---

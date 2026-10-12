@@ -1,0 +1,71 @@
+method: epoch
+agent_type: react
+enable_memory: true
+enable_skill: false
+enable_tools: true
+trace_actions: true
+max_turns: 6
+write_back: false
+dataset_name: healthbench
+memory_store_root: data/memory
+memory_store_backend: sqlite_epoch
+memory_store_mode: create
+top_k: 3
+
+epoch:
+  start_index: 0
+  end_index: null
+  num_epochs: 3
+  batch_size: 3
+  parallel_episodes: true
+  shuffle_each_epoch: true
+  seed: 42
+  max_new_memories: null
+  evidence_windows:
+    enabled: true
+    target_multi_question_ratio_min: 0.30
+    target_multi_question_ratio_max: 0.40
+    linkage: complete
+    clustering_service_url: http://127.0.0.1:9010/cluster
+    clustering_service_timeout: 300
+    clustering_model_id: BAAI/bge-m3
+    cache_dir: data/evidence_clusters
+  memory_writer:
+    provider: same_llm
+    prompt_root: prompts
+    top_k: 3
+    max_retries: 3
+    strict_json: false
+    use_json_response_format: true
+  memory_utility_judge:
+    enabled: false
+  summary_review:
+    enabled: true
+    max_retries: 3
+    version_retries: 3
+    max_input_tokens: 15000
+    max_output_tokens: 5000
+    context_tokens: 18000
+    safety_margin_tokens: 500
+  conflict_resolution:
+    enabled: true
+    provider: same_llm
+    max_retries: 3
+    use_json_response_format: true
+    max_input_memories: 5
+    min_abandon_sources: 2
+  validation:
+    enabled: false
+    start_index: 0
+    end_index: null
+  test:
+    enabled: true
+    start_index: 0
+    end_index: null
+  skill:
+    dynamic_update_enabled: false
+    static_prompt: "Answer the current medical question. Use available tools when they are relevant, check important conditions and exceptions, and make the final answer complete."
+    provider: same_llm
+    max_tokens: 3000
+    max_batch_size: 5
+    max_retries: 2

@@ -1,0 +1,51 @@
+You are responsible for resolving a disputed reusable medical summary at the end of an Epoch.
+
+The target summary was previously marked as disputed because one or more temporary summaries appeared to conflict with it. Review the target, every conflict item, the stated applicability conditions, and the available source counts.
+
+For medical multiple-choice memories, compare the question conditions, the requested decision, and the answer content before deciding whether a conflict is real. Different causes, diagnoses, treatment steps, or exclusion priorities may answer different questions even when they share a clinical topic. Compare answer meanings, not option letters.
+
+For this dataset, different male frequencies, requested genotypes, mating conditions, or definitions may explain different answers. Compare these conditions before calling numerical results contradictory. Preserve scientific genotype notation and complete anatomical lists; do not turn a response assumption, nested option pattern, or image-related word into evidence supplied by the question.
+
+Use the reference answer and evaluation feedback only when actually supplied, and only for the question and conditions they support. Do not require Rubrics. Separate an incorrect extracted choice from a null or ambiguous extraction; a parsing-related 0 is not proof that the target's medical content is wrong. A correct label is not independent verification of all reasoning. Keep recorded scores unchanged and do not invent a missing reference answer or scoring explanation.
+
+Source counts are not a vote that overrides conditions and evidence. Repeated rounds of the same question, copied memories, and retrieval-induced repetition are not independent medical corroboration. Do not infer independence from a count or different ID alone. A supplied reference can resolve a case-specific answer conflict when its conditions match, but must not erase valid guidance for other conditions. When no supported resolution is possible, use `defer`; `abandon` still requires both explicit permission in the input and multiple independent conflict sources.
+
+Choose exactly one decision:
+
+- `restore`: The target summary remains valid. The conflict items are unsupported, mistaken, or do not materially contradict it. Keep the target text unchanged and restore it to active use.
+- `update`: The target and conflict evidence can be reconciled in one corrected summary. Return one complete replacement summary that preserves all valid, relevant, and non-conflicting information.
+- `split`: Different conclusions are valid under different conditions. Return two or more complete summaries with explicit, non-overlapping applicable conditions.
+- `defer`: The available evidence cannot safely determine which conclusion is correct. Keep the target disputed and wait for additional independent evidence.
+- `abandon`: Multiple independent conflict sources show that the target is incorrect or harmful and should no longer be used. This decision is allowed only when the input explicitly says that abandonment is allowed.
+
+Rules:
+
+- Prefer `defer` when the evidence is insufficient.
+- Do not resolve a medical factual conflict merely because one statement is newer or more detailed.
+- Use `split` only when conditions genuinely explain the difference.
+- Use `update` only when one coherent corrected summary is possible.
+- Preserve clinically decisive question conditions and the question-answer connection. Do not introduce incidental patient details, copied benchmark wording, option labels, unsupported medical facts, source identifiers, or parsing/scoring instructions into reusable summaries.
+- The target ID must be `1`.
+- Return valid JSON only.
+
+Output schema:
+
+{
+  "decision": "restore|update|split|defer|abandon",
+  "target_id": "1",
+  "reason": "brief evidence-based reason",
+  "summaries": [
+    {
+      "summary": "complete processed summary",
+      "applicable_conditions": "explicit applicability conditions"
+    }
+  ]
+}
+
+For `restore`, `defer`, and `abandon`, `summaries` must be empty.
+For `update`, `summaries` must contain exactly one complete summary.
+For `split`, `summaries` must contain at least two complete summaries.
+
+{{CURRENT_CONFLICT}}
+
+Return valid JSON only:

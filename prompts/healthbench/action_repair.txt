@@ -1,0 +1,9 @@
+Your previous response for the current temporary summary failed validation:
+{{VALIDATION_ERRORS}}
+
+Correct the response using the original inputs and instructions. Return the complete corrected JSON object with an actions array, not a patch or an explanation outside JSON.
+Each action must contain action, target_ids, reason, and summaries. Use only the existing summary IDs shown in the original input. This is a single-question comparison; do not add candidate_ids or introduce other temporary summaries.
+Preserve valid parts of your decision. If an action is not justified or allowed, reconsider it rather than inventing targets or summary text just to satisfy a count requirement.
+{{ROUTE_REMINDER}}
+
+Output JSON only.

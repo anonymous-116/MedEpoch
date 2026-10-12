@@ -1,0 +1,149 @@
+You are a helpful assistant responsible for updating a database of reusable summaries.
+
+Your task is to jointly process the temporary summaries provided below. Use the questions as context, and compare the summaries' content and applicable conditions with each other and with any existing summaries. Compare all relevant summaries across the entire input; retrieval associations do not restrict these comparisons. Produce the database actions needed to preserve reusable, valid, and non-conflicting guidance.
+
+Evaluate temporary summaries and their usage assessments rather than assuming they are correct or better than existing guidance. Greater length or specificity alone does not justify an update.
+
+For medical multiple-choice memory, preserve the connection between the distinguishing question conditions, what is being asked, and the reference answer content. A diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first are different decision points. Keep clinically decisive details, treatment timing, comparison groups, and necessary option context; do not discard a useful question-answer connection merely because it originated from one case. Incidental identifiers or verbatim benchmark wording are not the reusable knowledge. Store answer content or medical concepts, not option letters or answer-position rules.
+
+For these MMMU Medical cases, distinguish histological tissue identification from disease diagnosis, organism-to-disease association, reaction-reagent selection, radiographic explanation of a symptom, and numerical comparison. Preserve the actual image or description conditions, including cell layers, cell shape when given, tissue structures, requested reaction step, units, comparison groups, and denominators. Identical question stems, shared tissue terminology, or option positions do not establish the same answer. Different tissue types under different morphological conditions are not automatically a conflict; different case IDs alone do not establish independent support.
+
+Use only image content or precomputed descriptions actually supplied. A referenced path is not visual evidence. Distinguish observations from report impressions and uncertain suggestions; do not invent morphology, anatomical location, disease findings, numerical inputs, or mechanisms to justify a reference answer. Keep a supported bounded question-answer connection when the description is incomplete, with its material limitation explicit, rather than replacing it with an unsupported universal rule.
+
+Use only the question, answer, reference, evaluation feedback, and Information usage assessments actually supplied. Do not require missing Rubrics or invent missing evidence. Distinguish the original response, the extracted choice, and the reference answer. An extracted choice that disagrees with the reference is not correct knowledge; a null or ambiguous extraction is not a known wrong choice. A score of 1 supports the scored label match, not every explanation; a recorded 0 caused by extraction failure does not by itself invalidate medical guidance. Keep extraction behavior and scores out of reusable summary text.
+
+Compare answer meanings together with their conditions and question types. Different option letters need not mean different answers, and identical letters need not mean identical answers. Different conclusions under different conditions are not automatically a conflict. A shared disease or keyword alone does not justify merging distinct decision points. Information usage assessments may suggest an applicability problem but do not establish causality merely from retrieval, wording overlap, or a score change. Independent support must concern the same core question-answer connection and applicable conditions; repetition, another version of the same question, or a copied explanation does not supply it.
+
+When consolidating compatible question-answer memories, retain each supported condition-answer association rather than replacing them with a broad topic description. Candidate IDs are identifiers, even when written as letters; preserve them in `candidate_ids` and do not confuse them with option labels. Do not change the action rules below to consolidate candidates: without existing targets, consolidation uses `add`, not `merge`.
+
+Each temporary summary has a temporary ID. Each action, including `reject`, must list one or more supporting temporary IDs in `candidate_ids`. A temporary summary may support more than one compatible action, for example confirming an existing summary while also adding distinct new guidance. Every temporary ID must appear in at least one action.
+
+Use the following actions:
+
+* `add`: One or more temporary summaries contain reusable guidance not adequately expressed by an existing summary. Create one complete new summary.
+* `keep`: The temporary summaries do not materially improve a targeted existing summary. This action does not modify its text.
+* `confirm`: The temporary summaries provide independent support for the core content and conditions of one or more existing summaries. This action does not modify their text. A temporary summary from the same question as an existing summary cannot independently confirm that existing summary.
+* `update`: The temporary summaries or their usage assessments reveal a substantive correction, limitation, exception, priority, or applicability change to one existing summary. Produce one complete replacement summary.
+* `merge`: The temporary summaries and at least two existing summaries describe complementary parts of the same decision point. Produce one complete merged summary.
+* `split`: The temporary summaries and one or more existing summaries contain valid guidance for different conditions. Reorganize all relevant new and old guidance into at least two complete condition-specific summaries.
+* `dispute`: The temporary summaries and one or more existing summaries reach incompatible conclusions under the same conditions, and the available evidence cannot resolve the conflict. Do not overwrite either side.
+* `reject`: The temporary summaries are insufficiently reusable, unsupported, internally inconsistent, too specific to their questions, or mainly reflect dataset artifacts.
+
+Follow these output rules:
+
+* `add`: `target_ids` is empty and `summaries` contains exactly one complete new summary.
+* `keep`: `target_ids` contains the existing summary IDs assessed by this action and `summaries` is empty.
+* `confirm`: `target_ids` contains only existing summary IDs independently supported by at least one of this action's candidates, and `summaries` is empty.
+* `update`: `target_ids` contains exactly one existing summary ID and `summaries` contains exactly one complete replacement summary.
+* `merge`: `target_ids` contains at least two existing summary IDs and `summaries` contains exactly one complete merged summary.
+* `split`: `target_ids` contains all existing summaries involved and `summaries` contains at least two complete condition-specific summaries.
+* `dispute`: `target_ids` contains all conflicting existing summary IDs and `summaries` is empty.
+* `reject`: `target_ids` and `summaries` are empty.
+
+For every action, provide a brief, specific `reason` grounded in the input. For `update`, identify what substantively needs to change and which input supports that change. For `merge`, explain the shared decision point, what each targeted existing summary contributes, and how their applicable conditions fit together.
+
+For actions that require new summaries, provide their complete text and applicable conditions in `summaries`.
+
+Use only temporary IDs and existing summary IDs shown in the input. In any summary you create, preserve all valid, relevant, and non-conflicting guidance together with the conditions under which it applies. Do not broaden or narrow applicability without substantive support. Integrate new guidance with retained rules so the result is internally consistent and implements the changes described in the `reason`.
+
+When multiple candidates propose compatible changes to the same existing summary, combine those changes into one appropriate `update`, `merge`, or `split` action and provide the complete resulting summary or summaries. Valid `keep` or `confirm` actions may coexist with that action.
+
+Each existing summary may participate in at most one `update`, `merge`, or `split` action in the window. An existing summary targeted by `dispute` must not be updated, merged, or split in the same window.
+
+If no Existing Summaries section is provided, jointly compare the temporary summaries with each other. Use `add` to store distinct or consolidated reusable guidance and `reject` for unusable candidates; do not use an action that requires an existing target.
+
+Return valid JSON only:
+
+```json
+{
+  "actions": [
+    {
+      "action": "add|keep|confirm|update|merge|split|dispute|reject",
+      "candidate_ids": ["A"],
+      "target_ids": [],
+      "reason": "brief, specific justification based on the input",
+      "summaries": [
+        {
+          "summary": "complete processed summary",
+          "applicable_conditions": "clearly stated applicable conditions"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Example: Related candidates without existing targets use add
+
+Constructed window example based on supplied MMMU Medical questions mmmu_medical-0417 and mmmu_medical-0647. Candidate IDs A and B are temporary identifiers, not option labels. These are illustrative candidate summaries and an illustrative action, not observed run results.
+
+### Input
+
+Temporary ID: `A`
+Source question: mmmu_medical-0417.
+Question:
+What kind of tissue does this image depict? <image 1> 
+A. Simple Cuboidal
+B. Simple Columnar
+C. Simple Squamous
+D. Pseudostratified
+Reference answer: Simple Cuboidal.
+
+Summary:
+
+For the supplied tissue-identification question described as thyroid follicles containing colloid and lined by a single layer of follicular cells, the reference answer is simple cuboidal epithelium. The question asks for tissue type, not a thyroid tumor diagnosis.
+
+Applicable Conditions:
+
+Applicable to the described thyroid-follicle and colloid context in a tissue-identification question. The description does not explicitly report cell height, so do not invent a cell-height observation. Do not generalize this answer to all single-layer epithelia or treat a report impression as a confirmed tumor diagnosis.
+
+Temporary ID: `B`
+Source question: mmmu_medical-0647.
+Question:
+What kind of tissue does this image depict? <image 1> 
+A. Stratified squamous
+B. Simple squamous
+C. Simple columnar
+Reference answer: Simple columnar.
+
+Summary:
+
+For a tissue-identification question whose supplied description shows a single layer of columnar epithelial cells with elongated nuclei toward the base, the reference answer is simple columnar epithelium.
+
+Applicable Conditions:
+
+Applicable to tissue-type identification with the described single layer and columnar cell morphology. A single layer alone does not distinguish this answer from other simple epithelia. The supplied material does not establish a specific organ of origin or a disease diagnosis.
+
+No existing summaries are supplied for this example.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "candidate_ids": [
+        "A",
+        "B"
+      ],
+      "target_ids": [],
+      "reason": "Candidates A and B describe complementary condition-answer associations within epithelial tissue identification. Preserve the thyroid-follicle and colloid context with simple cuboidal, and the explicitly described columnar morphology with simple columnar. A shared single layer does not make the answers interchangeable. There are no existing targets, so store the complete conditional guidance with add, not merge. Similar question wording is not independent confirmation.",
+      "summaries": [
+        {
+          "summary": "For the supplied tissue-identification question described as thyroid follicles containing colloid and lined by a single layer of follicular cells, the reference answer is simple cuboidal epithelium. The question asks for tissue type, not a thyroid tumor diagnosis.\n\nFor a tissue-identification question whose supplied description shows a single layer of columnar epithelial cells with elongated nuclei toward the base, the reference answer is simple columnar epithelium.",
+          "applicable_conditions": "Applicable to the described thyroid-follicle and colloid context in a tissue-identification question. The description does not explicitly report cell height, so do not invent a cell-height observation. Do not generalize this answer to all single-layer epithelia or treat a report impression as a confirmed tumor diagnosis.\n\nApplicable to tissue-type identification with the described single layer and columnar cell morphology. A single layer alone does not distinguish this answer from other simple epithelia. The supplied material does not establish a specific organ of origin or a disease diagnosis."
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+Below is the actual window to process. Use its IDs and evidence, not the illustrative IDs above.
+
+{{TEMPORARY_SUMMARIES}}
+
+{{EXISTING_SUMMARIES}}
+
+Return valid JSON only:

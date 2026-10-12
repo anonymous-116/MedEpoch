@@ -1,0 +1,3 @@
+tools:
+  general_search:
+    api_keys_file: configs/local/tavily_api_keys.yaml

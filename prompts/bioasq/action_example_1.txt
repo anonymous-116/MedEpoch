@@ -1,0 +1,63 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is unrelated
+
+Constructed relationship example using bounded question-answer content from supplied BioASQ cases 33059 and 41932; the action and database IDs are illustrative, not an observed run result. The summaries are newly written rather than copied from the probe's generated memories.
+
+### Input
+
+Current question (33059):
+Are transcription and splicing connected?
+A. yes
+B. no
+
+Reference answer: yes.
+
+## Temporary Summary
+
+Summary:
+
+For the question asking whether transcription and splicing are connected, the reference answer is yes: transcription and splicing are connected. This process-level connection does not by itself answer whether splicing speckles are associated with transcription.
+
+Applicable Conditions:
+
+Applicable to questions about the connection between transcription and splicing as processes. Do not turn this broad connection into a claim that every splicing event occurs co-transcriptionally or into an answer about the association, location, or function of splicing speckles.
+
+## Summary from Another Question
+
+ID: `1`
+Source: BioASQ case 41932.
+Source question:
+Does ventriculoperitoneal shunt improve normal pressure hydrocephalus?
+A. yes
+B. no
+
+Reference answer: yes.
+
+Summary:
+
+For the question asking whether a ventriculoperitoneal shunt improves normal pressure hydrocephalus, the reference answer is yes: ventriculoperitoneal shunting can improve normal pressure hydrocephalus. The question does not establish that every patient benefits, that the condition is invariably cured, or which individual patient should receive a shunt.
+
+Applicable Conditions:
+
+Applicable to questions about improvement of normal pressure hydrocephalus with ventriculoperitoneal shunting. Do not extend the answer to every type of hydrocephalus, guaranteed individual benefit, patient-selection criteria, or a specific next-step recommendation not supplied by the question.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate supplies a new question-answer connection about transcription and splicing. Summary 1 concerns improvement of normal pressure hydrocephalus with a ventriculoperitoneal shunt and does not cover that proposition. Both references say yes, but their entities and relations differ. Leave Summary 1 untouched and store the candidate with add; unrelatedness does not justify keep or reject, and identical polarity does not justify confirm or merge.",
+      "summaries": [
+        {
+          "summary": "For the question asking whether transcription and splicing are connected, the reference answer is yes: transcription and splicing are connected. This process-level connection does not by itself answer whether splicing speckles are associated with transcription.",
+          "applicable_conditions": "Applicable to questions about the connection between transcription and splicing as processes. Do not turn this broad connection into a claim that every splicing event occurs co-transcriptionally or into an answer about the association, location, or function of splicing speckles."
+        }
+      ]
+    }
+  ]
+}
+
+---

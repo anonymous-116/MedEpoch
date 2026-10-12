@@ -1,0 +1,4 @@
+Your previous response has the following issues:
+{{VALIDATION_ERRORS}}
+
+Correct these issues according to the original instructions and return the complete corrected JSON. Output JSON only.

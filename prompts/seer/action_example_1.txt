@@ -1,0 +1,53 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is not applicable
+
+Constructed relationship example using bounded question-answer content from supplied SEER cases 370 and 553; the action and database ID are illustrative, not observed run results. These cases share a registry format and breast-related fields but differ in the recorded conditions and reference answer. No cross-disease case is invented.
+
+### Input
+
+Current question (condensed from case 370): Given a 67-year-old woman's SEER record with Radiation recode None/Unknown, Chemotherapy recode Yes, regional nodes positive 3 and examined 13, two tumors, ER/PR Positive, HER2 Borderline, raw CS tumor size 62, Vital status Dead, and COD to site recode Intrahepatic Bile Duct, choose one radiation/surgery-sequence category.
+Reference answer: No radiation and/or cancer-directed surgery.
+
+## Temporary Summary
+
+Summary:
+
+For the supplied SEER record of a 67-year-old woman with Radiation recode None/Unknown, Chemotherapy recode Yes, regional nodes positive 3 and examined 13, two recorded tumors, ER/PR Positive, HER2 Borderline, and CS tumor size recorded as 62, the reference answer to the requested choice among radiation/surgery sequences is No radiation and/or cancer-directed surgery. The record also lists Vital status Dead and COD to site recode Intrahepatic Bile Duct; these fields do not establish the primary tumor site, a metastasis, or a rule that death determines the treatment answer. None/Unknown does not establish confirmed absence of radiation or a future treatment plan.
+
+Applicable Conditions:
+
+Applicable to the described SEER radiation/surgery-sequence question with the combined None/Unknown radiation, Yes chemotherapy, node, receptor, and raw size fields. Preserve the full combined answer category. Do not transfer a Beam radiation record's sequence, infer completed neoadjuvant therapy from Yes chemotherapy, or use death or COD site alone to choose a treatment category.
+
+## Summary from Another Question
+
+ID: `1`
+Source content: SEER case 553, rewritten as a bounded memory for this example.
+
+Summary:
+
+For the supplied SEER record of a 45-year-old woman with Radiation recode Beam radiation, regional nodes positive 0 and examined 3, ER/PR Positive, HER2 Negative, CS tumor size recorded as 7, and Chemotherapy recode No/Unknown, the reference answer to the requested choice among radiation/surgery sequences is Radiation after surgery. This bounded association does not establish an operation type, tumor stage, or a universal sequence from the radiation modality alone.
+
+Applicable Conditions:
+
+Applicable to the described SEER record-based radiation/surgery-sequence question with the combined Beam radiation, receptor, node, and raw tumor-size fields. Preserve No/Unknown as recorded. Do not transfer the answer using a shared breast-cancer keyword, infer staging from an undocumented size code, or apply it to records with different radiation categories without matching evidence.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate supplies a bounded record-to-answer connection for the None/Unknown radiation profile. Summary 1 covers a different Beam radiation record and does not cover this connection. Leave Summary 1 untouched and store the candidate with add. Shared registry fields do not justify confirm or merge, and different answers under different conditions do not establish a conflict. Non-applicability does not justify discarding the candidate with keep or reject.",
+      "summaries": [
+        {
+          "summary": "For the supplied SEER record of a 67-year-old woman with Radiation recode None/Unknown, Chemotherapy recode Yes, regional nodes positive 3 and examined 13, two recorded tumors, ER/PR Positive, HER2 Borderline, and CS tumor size recorded as 62, the reference answer to the requested choice among radiation/surgery sequences is No radiation and/or cancer-directed surgery. The record also lists Vital status Dead and COD to site recode Intrahepatic Bile Duct; these fields do not establish the primary tumor site, a metastasis, or a rule that death determines the treatment answer. None/Unknown does not establish confirmed absence of radiation or a future treatment plan.",
+          "applicable_conditions": "Applicable to the described SEER radiation/surgery-sequence question with the combined None/Unknown radiation, Yes chemotherapy, node, receptor, and raw size fields. Preserve the full combined answer category. Do not transfer a Beam radiation record's sequence, infer completed neoadjuvant therapy from Yes chemotherapy, or use death or COD site alone to choose a treatment category."
+        }
+      ]
+    }
+  ]
+}
+
+---

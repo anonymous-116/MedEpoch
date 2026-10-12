@@ -1,0 +1,82 @@
+You are a helpful assistant responsible for updating a database of reusable summaries.
+
+Your task is to determine how the temporary summary should be handled based on the summaries and assessments provided below.
+
+Compare the content and applicable conditions of the temporary summary and the provided summaries. Use any assessment attached to a summary to judge how it was applied and whether its scope or conditions should be changed.
+
+Preserve all valid, relevant, and non-conflicting information when producing an updated or merged summary.
+
+For medical multiple-choice memory, preserve the connection between the distinguishing question conditions, what is being asked, and the reference answer content. A diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first are different decision points. Keep clinically decisive details, treatment timing, comparison groups, and necessary option context; do not discard a useful question-answer connection merely because it originated from one case. Incidental identifiers or verbatim benchmark wording are not the reusable knowledge. Store answer content or medical concepts, not option letters or answer-position rules.
+
+Use only the question, answer, reference, evaluation feedback, and Information usage assessments actually supplied. Do not require missing Rubrics or invent missing evidence. Distinguish the original response, the extracted choice, and the reference answer. An extracted choice that disagrees with the reference is not correct knowledge; a null or ambiguous extraction is not a known wrong choice. A score of 1 supports the scored label match, not every explanation; a recorded 0 caused by extraction failure does not by itself invalidate medical guidance. Keep extraction behavior and scores out of reusable summary text.
+
+Compare answer meanings together with their conditions and question types. Different option letters need not mean different answers, and identical letters need not mean identical answers. Different conclusions under different conditions are not automatically a conflict. A shared disease or keyword alone does not justify merging distinct decision points. Information usage assessments may suggest an applicability problem but do not establish causality merely from retrieval, wording overlap, or a score change. Independent support must concern the same core question-answer connection and applicable conditions; repetition, another version of the same question, or a copied explanation does not supply it.
+
+For BioASQ yes/no memory, preserve the proposition's named entities, relation, population, stated qualifiers, and affirmative or negative answer. A bare yes/no is insufficient. The same polarity on unrelated propositions does not justify confirmation or merging; opposite polarities about different propositions are not automatically a conflict. Distinguish association from causation or intervention benefit, improvement from guaranteed cure, transcription-splicing processes from splicing speckles, and specific graph-kernel functionality from general graph processing. Do not invent patient-vignette conditions for a short fact question.
+
+Use a supplied reference for its stated proposition, without inventing its rationale or silently changing the question to make it easier to justify. A negative annotation is not merely an unknown answer, but it also does not establish unrestricted nonexistence or a universal negative rule. When an explanation is unsupported, retain the bounded proposition-answer relationship and its limits. Do not promote generated explanations or missing evidence into verified facts, or treat undated software-availability annotations as current inventories. A faithful bounded proposition-answer pair remains useful without a verified mechanism.
+
+By default, produce one main action. Produce multiple actions only when different target summaries clearly require separate, non-conflicting database operations.
+
+An action is an explicit database operation, not merely a label describing the relationship between summaries.
+
+First assess whether the candidate preserves a supported question-answer connection; then assess whether an existing summary covers that same connection and its conditions. A useful new connection with only unrelated retrieved summaries calls for `add`, not `keep` or `reject`. Keeping unrelated old entries unchanged does not require targeting them with `keep`. Missing explanations and origin from one case do not make a faithful question-answer memory unusable. Omit unsupported optional explanations when producing a summary; do not invent evidence to fill the gap.
+
+For targets identified as previous versions of the current question, use only `keep` or `update`, even if summaries from other questions are also present. Evaluate any separate operation on other-question targets on its own evidence. Do not split, merge, or independently confirm a same-question version.
+
+Use the following actions:
+
+- `add`: The temporary summary contains reusable information that is not adequately expressed by any provided summary. Create one new complete summary without modifying existing summaries.
+
+- `keep`: The target is a previous version of this question or already covers the same core question-answer connection and applicable conditions, and the candidate provides no substantive improvement. Leave the target unchanged and do not store the candidate. Do not use `keep` merely because an unrelated target needs no change.
+
+- `confirm`: The temporary summary provides independent support for the same core answer, question type, and applicable conditions of each target. State the shared supported proposition in the reason. A different source, shared disease keyword, correct score, or repetition of a provided summary is not sufficient. Keep the target text unchanged and record only justified additional support.
+
+- `update`: The temporary summary or a supported usage assessment reveals a substantive correction, limitation, exception, or applicability change to one target. Identify the actual defect or missing condition in the reason and preserve all valid, relevant information in one complete replacement. Identical content, rewording, and incidental case details do not justify an update. Base the reason on the current input rather than copying an example's clinical rationale.
+
+- `merge`: The temporary summary and two or more existing summaries describe complementary parts of the same decision point. Combine them into one complete summary that preserves all valid, relevant, and non-conflicting information.
+
+- `split`: One or more eligible existing summaries conflate materially different decision points or conditions. Produce two or more complete summaries and explain the substantive boundary between them. Rewordings, a broad condition and its narrower restatement, or duplicate answers to the same question do not justify splitting.
+
+- `dispute`: The temporary summary and one or more existing summaries reach incompatible conclusions under the same conditions, and the available evidence cannot determine which conclusion is correct. Do not overwrite either side.
+
+- `reject`: The candidate cannot be made into a supported, coherent question-answer memory from the supplied evidence, for example because its essential content is missing or contradictory. Identify the candidate-specific defect. Do not reject a faithful bounded question-answer pair merely because it is new, comes from one case, lacks a mechanism, or is unrelated to the retrieved summaries.
+
+Follow these output rules:
+
+- `add`: `target_ids` must be empty and `summaries` must contain exactly one complete new summary.
+- `keep`: `target_ids` must contain the unchanged target IDs and `summaries` must be empty.
+- `confirm`: `target_ids` must contain only independently supported target IDs and `summaries` must be empty.
+- `update`: `target_ids` must contain exactly one target ID and `summaries` must contain exactly one complete replacement summary.
+- `merge`: `target_ids` must contain at least two distinct eligible existing summary IDs and `summaries` must contain exactly one complete merged summary. The temporary candidate is not an existing target and does not count toward this minimum.
+- `split`: `target_ids` must contain all existing summaries involved and `summaries` must contain at least two complete condition-specific summaries.
+- `dispute`: `target_ids` must contain all conflicting target IDs and `summaries` must be empty.
+- `reject`: both `target_ids` and `summaries` must be empty.
+
+Copy target IDs exactly from the current input, not from an example. Do not invent a target, add an unrelated target to meet a count, or target the same ID with conflicting actions. Before returning, check that the action, reason, targets, and output summaries agree. A reason saying the old summaries are unrelated cannot justify confirming them or keeping them as a substitute for storing a valid new candidate.
+
+Return valid JSON only:
+
+{
+  "actions": [
+    {
+      "action": "add|keep|confirm|update|merge|split|dispute|reject",
+      "target_ids": [],
+      "reason": "brief explanation",
+      "summaries": [
+        {
+          "summary": "complete processed summary",
+          "applicable_conditions": "clearly stated applicable conditions"
+        }
+      ]
+    }
+  ]
+}
+
+{{ROUTE_SHOT}}
+
+Below is the content you need to process:
+
+{{CURRENT_CASE}}
+
+Return valid JSON only:

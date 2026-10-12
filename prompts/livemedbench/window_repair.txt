@@ -1,0 +1,10 @@
+Your previous response has the following issues:
+{{VALIDATION_ERRORS}}
+
+Correct these issues using the original window, action definitions, and constraints. Return the complete corrected JSON object, not a patch. Each action must have exactly `action`, `candidate_ids`, `target_ids`, `reason`, and `summaries`; each written summary must have exactly `summary` and `applicable_conditions`.
+
+Use only supplied candidate and existing-target IDs. Every candidate, including an unusable one, must appear in at least one action. An unusable candidate can be covered by a justified `reject`; do not invent an existing target to cover it. Preserve action cardinalities, combine compatible changes to one target, and respect the original mutation and dispute constraints. With no existing targets, use only `add` or `reject`.
+
+Preserve supported decisions and clinical meaning during syntax or schema repair. If the decision violates the original constraints, reconsider it from the original evidence and explain why in `reason`. Do not create independent support, clinical claims, or new action semantics to satisfy validation.
+
+Output JSON only.

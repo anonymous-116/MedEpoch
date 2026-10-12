@@ -1,0 +1,16 @@
+tools:
+  enabled: [medical_text_search, medical_term_search]
+
+evaluation:
+  enabled: true
+  type: multiple_choice
+
+answer_extraction:
+  enabled: true
+  provider: same_llm
+  use_json_response_format: true
+  max_completion_tokens: 128
+
+epoch:
+  memory_writer:
+    prompt_dataset: med_qa

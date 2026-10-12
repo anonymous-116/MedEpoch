@@ -1,0 +1,164 @@
+The following teaching examples use LiveMedBench-style clinical material. The database states and independent-support scenarios are synthetic; they are not claimed to be observed operations from the supplied run. Each example is a separate call. Use the original action definitions and current inputs.
+
+## Example: No old memory: add the supported explanation
+
+### Input
+
+Temporary Summary:
+{
+  "summary": "When an initial PA chest radiograph shows an uncertain apical or infraclavicular opacity, explain that overlapping anatomy can resemble a lung lesion. An apicolordotic view helps clarify the lung apices by reducing overlap from the clavicles and upper ribs. In this follow-up setting it comes after the initial PA view; it is not a view primarily of the mediastinum or lower lung zones. The request for an additional view alone does not establish a diagnosis.",
+  "applicable_conditions": "Questions asking why an apicolordotic follow-up view is requested after an ambiguous apical or infraclavicular opacity on a PA chest radiograph."
+}
+
+Existing summaries: none.
+
+### Output
+
+```json
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The imaging explanation is reusable and no existing summary is supplied.",
+      "summaries": [
+        {
+          "summary": "When an initial PA chest radiograph shows an uncertain apical or infraclavicular opacity, explain that overlapping anatomy can resemble a lung lesion. An apicolordotic view helps clarify the lung apices by reducing overlap from the clavicles and upper ribs. In this follow-up setting it comes after the initial PA view; it is not a view primarily of the mediastinum or lower lung zones. The request for an additional view alone does not establish a diagnosis.",
+          "applicable_conditions": "Questions asking why an apicolordotic follow-up view is requested after an ambiguous apical or infraclavicular opacity on a PA chest radiograph."
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Example: Retrieved repetition: keep rather than confirm
+
+### Input
+
+Temporary Summary:
+{
+  "summary": "When an initial PA chest radiograph shows an uncertain apical or infraclavicular opacity, explain that overlapping anatomy can resemble a lung lesion. An apicolordotic view helps clarify the lung apices by reducing overlap from the clavicles and upper ribs. In this follow-up setting it comes after the initial PA view; it is not a view primarily of the mediastinum or lower lung zones. The request for an additional view alone does not establish a diagnosis.",
+  "applicable_conditions": "Questions asking why an apicolordotic follow-up view is requested after an ambiguous apical or infraclavicular opacity on a PA chest radiograph."
+}
+
+Summary from another question, ID: apical_view
+{
+  "summary": "When an initial PA chest radiograph shows an uncertain apical or infraclavicular opacity, explain that overlapping anatomy can resemble a lung lesion. An apicolordotic view helps clarify the lung apices by reducing overlap from the clavicles and upper ribs. In this follow-up setting it comes after the initial PA view; it is not a view primarily of the mediastinum or lower lung zones. The request for an additional view alone does not establish a diagnosis.",
+  "applicable_conditions": "Questions asking why an apicolordotic follow-up view is requested after an ambiguous apical or infraclavicular opacity on a PA chest radiograph."
+}
+
+Usage assessment: This summary was retrieved before answering; the new text repeats its explanation. No additional independent evidence or change in scope is supplied.
+
+### Output
+
+```json
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "apical_view"
+      ],
+      "reason": "The candidate repeats the retrieved explanation without a substantive change or independent support.",
+      "summaries": []
+    }
+  ]
+}
+```
+
+## Example: Independent support: confirm without rewriting
+
+### Input
+
+Temporary Summary:
+{
+  "summary": "When an initial PA chest radiograph shows an uncertain apical or infraclavicular opacity, explain that overlapping anatomy can resemble a lung lesion. An apicolordotic view helps clarify the lung apices by reducing overlap from the clavicles and upper ribs. In this follow-up setting it comes after the initial PA view; it is not a view primarily of the mediastinum or lower lung zones. The request for an additional view alone does not establish a diagnosis.",
+  "applicable_conditions": "Questions asking why an apicolordotic follow-up view is requested after an ambiguous apical or infraclavicular opacity on a PA chest radiograph."
+}
+
+Summary from another question, ID: apical_view
+{
+  "summary": "When an initial PA chest radiograph shows an uncertain apical or infraclavicular opacity, explain that overlapping anatomy can resemble a lung lesion. An apicolordotic view helps clarify the lung apices by reducing overlap from the clavicles and upper ribs. In this follow-up setting it comes after the initial PA view; it is not a view primarily of the mediastinum or lower lung zones. The request for an additional view alone does not establish a diagnosis.",
+  "applicable_conditions": "Questions asking why an apicolordotic follow-up view is requested after an ambiguous apical or infraclavicular opacity on a PA chest radiograph."
+}
+
+Evidence for this synthetic comparison: The current question is a distinct case. The old memory was not provided to its answering model. Separately supplied case evidence and feedback support the same follow-up imaging purpose and conditions; this is not duplicated wording from a shared rubric alone.
+
+### Output
+
+```json
+{
+  "actions": [
+    {
+      "action": "confirm",
+      "target_ids": [
+        "apical_view"
+      ],
+      "reason": "The distinct unexposed case supplies independent support for the same imaging purpose and applicability; the existing text needs no change.",
+      "summaries": []
+    }
+  ]
+}
+```
+
+## Example: Correct a supported formula error while preserving other guidance
+
+### Input
+
+Synthetic comparison adapted from a numerical discrepancy in the clinical material.
+
+Temporary Summary: The 500-rule ratio is 500 / TDD grams of carbohydrate per insulin unit. A checked worked example supplied for this comparison has TDD = 50 units/day and a ratio of 10 g/unit.
+
+Existing summary, ID: carbohydrate_ratio
+{
+  "summary": "For an educational starting estimate, grams of carbohydrate covered by one insulin unit equal TDD / 500, where TDD is total daily insulin in units/day. Individual ratios must be checked against the treatment plan. Keep a hypoglycemia plan and review recurrent lows with the diabetes team.",
+  "applicable_conditions": "Educational explanation of carbohydrate coverage in insulin-treated diabetes; not an individualized dosing prescription."
+}
+
+### Output
+
+```json
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "carbohydrate_ratio"
+      ],
+      "reason": "The supplied checked calculation establishes that the ratio was inverted. Correct only that formula and retain individualized applicability and the hypoglycemia guidance.",
+      "summaries": [
+        {
+          "summary": "For an educational starting estimate, the 500 rule gives grams of carbohydrate covered by one insulin unit as 500 / TDD, where TDD is total daily insulin in units/day. This is a starting estimate, not a fixed ratio for every patient; individual ratios must be checked against the treatment plan. Keep a hypoglycemia plan and review recurrent lows with the diabetes team.",
+          "applicable_conditions": "Educational explanation of carbohydrate coverage in insulin-treated diabetes; not an individualized dosing prescription."
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Example: An unsupported calendar answer is not reusable memory
+
+### Input
+
+Temporary Summary: After taking emergency contraception following intercourse on cycle day 9, every patient will menstruate on the 20th or 21st of the following month. Pregnancy is excluded because day 9 is safe.
+Applicable conditions: Anyone who used emergency contraception.
+
+Evidence: This candidate generalizes an individual case's dates. Cycle length, ovulation timing, later exposures, and a valid pregnancy-test result are not established by the supplied material. No separate transferable guidance is contained in the candidate.
+Existing summaries: none.
+
+### Output
+
+```json
+{
+  "actions": [
+    {
+      "action": "reject",
+      "target_ids": [],
+      "reason": "The calendar prediction and pregnancy exclusion are unsupported generalizations; the candidate contains no supported reusable core.",
+      "summaries": []
+    }
+  ]
+}
+```

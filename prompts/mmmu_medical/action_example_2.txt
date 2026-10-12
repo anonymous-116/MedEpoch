@@ -1,0 +1,106 @@
+---
+
+## Example A: Keep a same-question version when there is no substantive change
+
+Constructed version-comparison examples based on supplied MMMU Medical question mmmu_medical-0871, with mmmu_medical-0638 as unrelated context. All previous summaries, database ID assignments, and actions are illustrative. Example B deliberately supplies an incorrect overgeneralization for correction; it is not an observed generated memory or endorsed knowledge. Each example has its own output.
+
+### Input
+
+Current question:
+What kind of tissue does this image depict? <image 1> 
+A. Cartilage
+B. Adipose
+C. Simple cuboidal
+
+Supplied Image Information (verbatim excerpt; original image not attached):
+1. Findings: The image shows a histological section of cartilage tissue. The chondrocytes are visible within their lacunae, and the extracellular matrix appears to be intact. There are no visible signs of inflammation, necrosis, or abnormal cell proliferation.
+
+Reference answer: Cartilage.
+
+## Temporary Summary
+
+Summary:
+
+For a histological tissue-identification question with a supplied description of chondrocytes within lacunae and an intact extracellular matrix, the reference tissue type is cartilage.
+
+Applicable Conditions:
+
+Applicable when the supplied histological image or description establishes the chondrocytes-in-lacunae and matrix findings relevant to this tissue-identification question. Do not apply the answer to every histology image or use this limited section to establish the condition of the entire specimen.
+
+## Previous Version from the Current Question
+
+ID: `1`
+
+Summary:
+
+For a histological tissue-identification question with a supplied description of chondrocytes within lacunae and an intact extracellular matrix, the reference tissue type is cartilage.
+
+Applicable Conditions:
+
+Applicable when the supplied histological image or description establishes the chondrocytes-in-lacunae and matrix findings relevant to this tissue-identification question. Do not apply the answer to every histology image or use this limited section to establish the condition of the entire specimen.
+
+## Summary from Another Question
+
+ID: `2`
+Source question for the constructed summary: mmmu_medical-0638.
+
+Summary:
+
+For a shoulder-pain question whose supplied radiograph description reports a displaced, comminuted left clavicle fracture with the humeral head aligned in the glenoid cavity, the reference explanation for the pain is fracture of the clavicle.
+
+Applicable Conditions:
+
+Applicable to identifying the cause of shoulder pain with the described clavicular fracture findings. Shoulder pain alone does not establish a fracture, and this question does not determine treatment or the extent of soft-tissue or neurovascular injury.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "keep",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Summary 1 already preserves the same tissue-identification question, chondrocytes-in-lacunae conditions, and cartilage answer. The candidate adds no substantive improvement. Keep the same-question version without replacement text; it is not independent confirmation. Summary 2 addresses a radiographic cause of shoulder pain and requires no operation.",
+      "summaries": []
+    }
+  ]
+}
+
+## Example B: Update only when the previous version has a concrete defect
+
+### Input
+
+Use the same current question, reference answer, temporary summary, and unrelated Summary 2 as in Example A. For this separate example, replace previous Summary 1 with the following deliberately incorrect constructed version:
+
+ID: `1`
+
+Summary:
+
+In every image-based tissue-identification question, the tissue is cartilage, regardless of the microscopic findings.
+
+Applicable Conditions:
+
+Applicable to all questions asking which tissue an image depicts.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "update",
+      "target_ids": [
+        "1"
+      ],
+      "reason": "Previous Summary 1 incorrectly extends cartilage to every tissue-identification image and discards the distinguishing chondrocytes and lacunae. The supplied question, description, and reference support the bounded cartilage connection, not that universal rule. Restore those conditions in one complete replacement. Leave unrelated Summary 2 unchanged; do not merge or split this same-question version.",
+      "summaries": [
+        {
+          "summary": "For a histological tissue-identification question with a supplied description of chondrocytes within lacunae and an intact extracellular matrix, the reference tissue type is cartilage.",
+          "applicable_conditions": "Applicable when the supplied histological image or description establishes the chondrocytes-in-lacunae and matrix findings relevant to this tissue-identification question. Do not apply the answer to every histology image or use this limited section to establish the condition of the entire specimen."
+        }
+      ]
+    }
+  ]
+}
+
+---

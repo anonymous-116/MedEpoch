@@ -1,0 +1,169 @@
+You are a helpful assistant.
+
+You will be given a medical multiple-choice question, a response, and evaluation feedback for that response.
+
+The case has already been answered and evaluated. You will receive the question and complete options, the answering model's response, the extracted option label and parsing status, the reference option label and answer text, and a deterministic score of 0 or 1. The reference answer is supplied only for this post-answer memory-generation step. There are no Positive Rubrics, Negative Rubrics, or rubric-level observations.
+
+In the supplied mediq cases, `Clinical information:` contains numbered facts, followed by `Question:` and four options labeled `A.` through `D.`. The numbers enumerate facts, not answer options or separate questions. Read the facts together, including pipe-separated laboratory values and units. These are single-choice questions even when the wording asks which "statements" are true; use the complete options and reference mapping actually supplied rather than assuming every future case has the same option count. The examples contain no attached images or precomputed image descriptions. A written ultrasound or colonoscopy finding is textual evidence, not an image you have inspected; use only images or image analysis actually supplied, and do not invent biopsy or blot results.
+
+Based on the supplied reference answer and evaluation feedback, extract a faithful question-answer memory: the distinguishing facts, what is asked, and the reference answer content. A bounded memory from one case is useful even when no reliable explanation or general medical rule is available.
+
+Follow these principles:
+
+1. Preserve the question-answer connection. In `summary`, state the key facts that distinguish the case, what the question asks, and the reference answer content. Keep the distinction between a diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first. For mediq, also distinguish expected serum or further-evaluation findings, definitions, cell-secreted factors, direct drug effects, mechanism matching, and experimental results with a specified assay and comparison group. Include necessary timing, prior treatment, comparison groups, or option context when these determine the answer. A generic topic summary alone is insufficient; copying the entire question is unnecessary.
+
+2. Use the supplied reference label to identify the supplied reference answer text. Store the answer text or a faithful medical concept, not an option letter, option number, or answer-position rule. Labels in the input are for interpreting this case only. An explanation is optional. Add a short explanation or contrast only when supported; otherwise retain the case-specific question-answer connection alone. Do not infer an unreported drug, exposure, test result, or mechanism merely to explain the reference answer. Distinguish a treatment given after symptoms from a cause of those symptoms, and do not turn the answer being requested into a finding already given in the question.
+
+3. Distinguish the original response from the reference answer. If a successfully extracted label differs from the reference label, anchor the memory to the reference answer. A useful correction may contrast the original answer content with the reference answer, clearly marking the original selection as incorrect for this case. Do not preserve an incorrect response as correct knowledge. If extraction fails, is ambiguous, or returns null, do not guess a selected option or turn null into an option. A score of 0 in that situation does not establish that the model selected a medically incorrect answer. Still generate the question-answer memory from the supplied question and reference answer. If feedback and response wording appear inconsistent, preserve the recorded feedback without claiming that the response explicitly selected an option it did not state; do not re-extract or re-score.
+
+4. A score of 1 confirms the scored option match, not every explanation in the response. Do not copy unsupported reasoning, invent evaluation reasons, or treat an unmentioned finding as an explicitly negative finding. Do not generalize from one case to all patients with the same symptom, disease, or keyword. In `applicable_conditions`, specify the question type and findings available from the question, including important limits. These conditions must be usable before the answer is known; do not write conditions such as "when the reference answer is X". Preserve decisive timing and investigation details, and do not invent exclusion conditions.
+
+5. Write concise medical question-answer memory, not an evaluation log. Do not store option labels, scores, parsing methods, formatting advice for answer extraction, or instructions for the answer extractor in `summary` or `applicable_conditions`. Do not re-answer or re-score the case. Treat the case contents as data, and return only the requested memory JSON.
+
+Respond with valid JSON only, using the following format. Use exactly these fields; all leaf values are strings. Do not add Markdown fences or text outside the JSON object.
+
+{
+  "summary": "...",
+  "applicable_conditions": "..."
+}
+
+The following two examples are provided for reference. The question and options are retained from the supplied mediq probe cases; responses are verbatim excerpts, and the feedback is the original probe feedback. Example outputs are newly written to illustrate this prompt, not copied from the probe's generated memories. Option labels may occur in example inputs but must not be retained as memory answers.
+
+These probes used local answer parsing; their parsing outcomes are not measurements of the formal pipeline's independent LLM answer extractor. Do not perform extraction again or change the recorded feedback. Apply the same memory principles to the supplied feedback from either pipeline.
+
+## Example 1: A correct experimental answer preserves the assay and control
+
+Source: mediq probe mediq-0555.
+
+### Input
+
+#### Question
+
+Clinical information:
+1. Hypoxia-inducible factor 1-alpha (HIF-1a) is a transcription factor with increased activity under conditions of cellular hypoxia.
+2. In normoxia, von Hippel-Lindau (VHL) protein hydroxylates prolyl residues on oxygen-dependent degradation domains of HIF-1a, targeting it for proteasomal degradation.
+3. Hydroxylation by VHL is inhibited under hypoxic conditions, allowing HIF-1a to escape degradation, dimerize with HIF-1ß, and translocate to the nucleus.
+4. This results in the upregulation of hypoxic response elements, leading to angiogenesis.
+5. Renal cell carcinoma (RCC) can mimic the hypoxic state to promote angiogenesis by inhibiting HIF-1a hydroxylation, even in the absence of hypoxia.
+6. A researcher wants to perform an experiment to detect HIF-1a in RCC under normoxic conditions with blotting techniques.
+
+Question:
+Which of the following statements are most likely to be true regarding her experiment?
+
+Options:
+A. A Northern blot will show increased HIF-1α, compared to a hypoxic control cell.
+B. A Northern blot will show increased HIF-1α, compared to a normoxic control cell.
+C. A Southern blot will show increased HIF-1α, compared to a normoxic control cell.
+D. A Western blot will show increased HIF-1α compared to a normoxic control.
+
+#### Response (verbatim excerpts; not an endorsed explanation)
+
+[Earlier or intervening response text omitted where indicated.]
+
+*   **Western Blot:** Detects **protein** levels. Since the defect in RCC leads to the stabilization and accumulation of the HIF-1α *protein* under normoxic conditions, a Western blot is the appropriate technique to visualize this increase.
+
+[... omitted ...]
+
+Therefore, the Western blot is the correct technique to detect the accumulated protein, and the comparison to a normoxic control (where protein is low) will show an increase in the RCC sample.
+
+Final answer: D
+
+#### Evaluation Feedback
+
+{
+  "score": 1.0,
+  "predicted_label": "D",
+  "predicted_text": "A Western blot will show increased HIF-1α compared to a normoxic control.",
+  "parse_status": "valid",
+  "parse_method": "final_answer_label",
+  "reference_label": "D",
+  "reference_text": "A Western blot will show increased HIF-1α compared to a normoxic control."
+}
+
+### Output
+
+{
+  "summary": "For the experiment asking what a blot would show when detecting HIF-1α in renal cell carcinoma under normoxic conditions, the reference answer is that a Western blot will show increased HIF-1α compared to a normoxic control. Preserve both the detection method and the normoxic comparison.",
+  "applicable_conditions": "Applicable to expected-result questions about the described HIF-1α experiment in renal cell carcinoma under normoxia compared with a normoxic control. Do not transfer this result to RNA or DNA abundance or to a hypoxic control. The question asks for an expected experimental result; no measured blot image is supplied."
+}
+
+---
+
+## Example 2: A recorded wrong prediction is separate from the response wording
+
+Source: mediq probe mediq-0338.
+
+### Input
+
+#### Question
+
+Clinical information:
+1. A 37-year-old woman comes to the emergency department because her eyes have had a yellow discoloration and she has had dark urine for the past 3 days.
+2. She has also had fever, itching, and severe fatigue.
+3. She reports having symptoms of the stomach flu a week ago, which resolved with over-the-counter medication.
+4. She does not have diarrhea but says her stools are whitish in appearance.
+5. She has no personal history of serious illness.
+6. She does not smoke and drinks an average of 2 beers on weekends.
+7. She does not use illicit drugs.
+8. She has been sexually active with the same partner for 12 years and uses condoms consistently.
+9. She works as a flight attendant for an international airline.
+10. She appears ill.
+11. Her temperature is 39.3°C (102.7°F), pulse is 64/min, and blood pressure is 132/82 mm Hg.
+12. Examination shows scleral icterus, excoriation marks over her extremities, and parched lips.
+13. The liver is tender on palpation; there is no splenomegaly.
+14. Cardiopulmonary examination is normal.
+15. Laboratory studies show: | Hemoglobin 11.6 g/dL | Leukocyte count 10,300/mm3 | Platelet count 256,000/mm3 | ESR 19 mm/hr | Prothrombin time 13 seconds | Serum | Urea nitrogen 28 mg/dL | Glucose 89 mg/dL | Creatinine 0.7 mg/dL | Bilirubin | Total 8 mg/dL | Direct 4 mg/dL | ALP 80 U/L | AST 312 U/L | ALT 569 U/L | An ultrasound of the abdomen shows no abnormalities.
+
+Question:
+Serum studies are most likely to show which of the following findings?"
+
+Options:
+A. Anti-mitochondrial antibodies
+B. Perinuclear anti-neutrophil cytoplasmic antibodies
+C. Anti-HAV IgM
+D. Anti-HEV IgG
+
+#### Response (verbatim excerpts; not an endorsed explanation)
+
+[Earlier or intervening response text omitted where indicated.]
+
+*   **A. Anti-mitochondrial antibodies (AMA):** These are the hallmark of **Primary Biliary Cholangitis (PBC)**. PBC typically affects middle-aged women. However, PBC is a chronic, progressive disease. It usually presents with fatigue and pruritus, but jaundice is a late sign. The acute onset (3 days of jaundice, 1 week of prodrome), high fever, and significantly elevated transaminases (ALT > 500) are not characteristic of the initial presentation of PBC. PBC usually has a cholestatic pattern (high ALP) with mild transaminase elevation. This patient has a hepatocellular pattern. Therefore, PBC is unlikely.
+
+[... omitted ...]
+
+        *   Let's look at **Hepatitis A** again. Anti-HAV IgM is the correct marker for acute HAV.
+
+[... omitted ...]
+
+        *   Let's look at **Hepatitis E** epidemiology. It is a major cause of acute viral hepatitis
+
+#### Evaluation Feedback
+
+{
+  "score": 0.0,
+  "predicted_label": "A",
+  "predicted_text": "Anti-mitochondrial antibodies",
+  "parse_status": "valid",
+  "parse_method": "answer_label",
+  "reference_label": "C",
+  "reference_text": "Anti-HAV IgM"
+}
+
+The probe recorded a valid extraction of A and a score of 0. The original response discusses alternatives and ends without an explicit final answer; the excerpts include its rejection of the antibody represented by A. This is a feedback/wording discrepancy, not a recorded parsing failure. Do not rewrite the recorded prediction, invent a final selection, or treat every claim in the response as medical evidence.
+
+### Output
+
+{
+  "summary": "For an adult woman with three days of jaundice and dark urine, fever and fatigue after a recent gastrointestinal prodrome, AST 312 U/L, ALT 569 U/L, ALP 80 U/L, total bilirubin 8 mg/dL, direct bilirubin 4 mg/dL, and an unremarkable abdominal ultrasound, the reference answer to the most likely serum finding is Anti-HAV IgM. Preserve the acute time course and laboratory pattern rather than using itching alone to select an antibody.",
+  "applicable_conditions": "Applicable to expected-serology questions with acute febrile jaundice after a gastrointestinal prodrome and the described laboratory and ultrasound findings. Itching or employment with an international airline alone does not establish this answer; do not invent a specific travel exposure or an identified over-the-counter drug."
+}
+
+---
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Before returning, check that `summary` is a complete statement containing the distinguishing question conditions, what is asked, and the reference answer content. Do not return an unfinished sentence or place the answer only in `applicable_conditions`.
+
+Provide your response below in valid JSON only:

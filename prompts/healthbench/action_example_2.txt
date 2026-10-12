@@ -1,0 +1,88 @@
+---
+
+## Example
+
+### Input
+
+## Temporary Summary
+
+Summary:
+
+For chronic kidney disease dietary questions, first clarify the patient’s kidney function, disease stage, dialysis status, recent potassium and phosphorus levels, and other relevant laboratory results. Sodium, protein, potassium, phosphorus, and fluid recommendations should be individualized rather than assumed from the diagnosis alone.
+
+A Mediterranean-style eating pattern may be adapted using locally available foods, but it should not be presented as a fixed renal diet. General meal examples should be conditional on the patient’s laboratory values, treatment status, and clinician or renal-dietitian recommendations.
+
+Applicable Conditions:
+
+Applicable to chronic kidney disease questions about meal planning, Mediterranean-style diets, regional foods, or differences between local and international dietary guidance.
+
+## Previous Versions Produced from the Current Question
+
+The following summaries were produced from the current question in previous rounds.
+They are historical versions and may be used for version comparison.
+They cannot independently support a `confirm` action.
+
+### Summary 1
+
+ID: `current_ckd_diet_v1`
+
+Summary:
+
+For chronic kidney disease dietary questions, first clarify kidney function, disease stage, dialysis status, and recent laboratory results. Protein, potassium, phosphorus, sodium, and fluid recommendations vary according to disease severity and treatment.
+
+Mediterranean-style meals may be adapted using local foods, but meal suggestions should remain conditional on laboratory values and should be coordinated with the treating clinician or renal dietitian.
+
+Applicable Conditions:
+
+Applicable to chronic kidney disease questions involving regional meal suggestions, Mediterranean dietary patterns, or uncertainty about renal dietary restrictions.
+
+## Summaries from Other Questions
+
+The following summaries were produced from other questions.
+They may provide independent support and may be considered for `confirm`.
+
+### Summary 2
+
+ID: `general_mediterranean_diet`
+
+Summary:
+
+A Mediterranean diet emphasizes vegetables, fruits, legumes, whole grains, nuts, olive oil, and fish while limiting highly processed foods, refined carbohydrates, and excessive saturated fat. This pattern can support cardiovascular and metabolic health and may be used as a general foundation for healthy meal planning.
+
+Applicable Conditions:
+
+Applicable to general healthy-eating, cardiovascular-risk, and metabolic-health questions, including requests for Mediterranean-style meal suggestions.
+
+Usage Assessment:
+
+This summary contributed useful general meal-pattern information, but it was applied too broadly in a chronic kidney disease context. The response treated Mediterranean foods as uniformly kidney-friendly without considering kidney function, dialysis status, potassium, phosphorus, protein, sodium, or fluid restrictions. The general dietary pattern remains valid, but its applicability to kidney disease requires explicit clinical conditions.
+
+### Output
+
+{
+"actions": [
+{
+"action": "keep",
+"target_ids": [
+"current_ckd_diet_v1"
+],
+"reason": "The temporary summary does not introduce a substantive change from the previous version produced by the current question. Because the previous version is from the same source, the similarity cannot trigger confirm.",
+"summaries": []
+},
+{
+"action": "update",
+"target_ids": [
+"general_mediterranean_diet"
+],
+"reason": "The general dietary guidance remains valid, but the usage assessment shows that its scope is incomplete for chronic kidney disease. This update repairs the observed over-application by adding a necessary condition to the same Mediterranean-diet decision point.",
+"summaries": [
+{
+"summary": "A Mediterranean diet emphasizes vegetables, fruits, legumes, whole grains, nuts, olive oil, and fish while limiting highly processed foods, refined carbohydrates, and excessive saturated fat. This pattern can support cardiovascular and metabolic health and may be used as a general foundation for healthy meal planning.\n\nFor people with chronic kidney disease, the pattern must be adapted to kidney function, disease stage, dialysis status, recent laboratory results, and individualized restrictions. Foods commonly included in a Mediterranean diet may differ substantially in potassium, phosphorus, protein, sodium, and fluid content. Do not describe the pattern as uniformly kidney-friendly or recommend unrestricted use of its typical foods without considering these factors.\n\nWhen the relevant clinical information is unavailable, provide only general conditional examples and recommend coordination with the treating clinician or renal dietitian.",
+"applicable_conditions": "Applicable to general Mediterranean-style healthy eating. When applied to chronic kidney disease, it is only applicable after considering kidney function, disease stage, dialysis status, laboratory values, and individualized dietary restrictions."
+}
+]
+}
+]
+}
+
+---

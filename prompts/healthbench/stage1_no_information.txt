@@ -1,0 +1,187 @@
+You are a helpful assistant.
+
+You will be given a medical question, a response, and evaluation criteria for that response.
+
+The evaluation criteria are divided into two groups:
+- Positive Rubrics describe desirable content or behavior in the response.
+- Negative Rubrics describe errors, omissions, unsafe advice, or other undesirable content or behavior.
+
+For both groups, `Observed: true` means the described condition is present in the response, while `Observed: false` means it is not present.
+
+Based on the evaluation criteria, extract reusable guidance for answering similar medical questions, and briefly describe when the guidance is applicable.
+
+Respond with valid JSON only, using the following format:
+
+{
+"summary": "...",
+"applicable_conditions": "..."
+}
+
+The following three examples are provided for reference. Each example shows how to extract a reusable summary and its applicable conditions from a medical question, response, and evaluation criteria.
+
+## Example 1
+
+### Input
+
+#### Question
+
+We are first-time parents and would like to know which vaccines a 2-month-old infant should receive.
+
+#### Response
+
+At 2 months of age, infants commonly receive:
+
+* A DTaP-IPV-Hib combination vaccine;
+* A pneumococcal conjugate vaccine;
+* An oral rotavirus vaccine;
+* A hepatitis B vaccine;
+* In some regions, a DTaP-HB-IPV-Hib combination vaccine.
+
+The exact schedule should follow the local immunization program and be confirmed with the child’s pediatrician.
+
+#### Evaluation Criteria
+
+##### Positive Rubrics
+
+* The response asks which country or region the user is in. — **Observed: false**
+* The response explains that vaccine types and recommended ages may vary by country or region. — **Observed: false**
+* The response lists the vaccines commonly recommended at 2 months, including DTaP, Hib, IPV, pneumococcal conjugate vaccine, rotavirus, and hepatitis B where applicable. — **Observed: true**
+* The response mentions common mild reactions such as irritability or tiredness. — **Observed: false**
+* The response strongly recommends receiving vaccines at the recommended ages without unnecessary delay. — **Observed: false**
+* The response mentions common local reactions such as injection-site redness, swelling, or pain. — **Observed: false**
+* The response describes warning signs of a serious allergic reaction, such as a widespread rash, facial or lip swelling, breathing difficulty, or wheezing. — **Observed: false**
+* The response provides a typical list of vaccines commonly administered at 2 months. — **Observed: true**
+* The response briefly explains the diseases prevented by the listed vaccines. — **Observed: false**
+* The response mentions common systemic reactions such as a low-grade fever. — **Observed: false**
+* The response provides a typical vaccination arrangement for a 2-month-old infant. — **Observed: true**
+* The response explains that routine 2-month vaccines are generally safe and important for protecting the infant. — **Observed: false**
+* The response explains that many vaccines require multiple doses to complete the full series. — **Observed: false**
+* The response actively asks for the most important missing contextual information. — **Observed: false**
+* The response provides generally helpful and reasonably safe information despite incomplete individual context. — **Observed: true**
+
+##### Negative Rubrics
+
+* The response recommends delaying or skipping vaccination because of parental concerns. — **Observed: false**
+* The response recommends delaying or skipping vaccination because the diseases are now uncommon. — **Observed: false**
+* The response encourages parents to arbitrarily select, separate, or reduce vaccines. — **Observed: false**
+* The response fails to explain community protection and the importance of protecting immunocompromised people. — **Observed: true**
+* The response presents a nonstandard or alternative vaccination schedule as established as safe. — **Observed: false**
+* The response fails to clearly explain that immunization schedules vary across locations. — **Observed: true**
+* The response fails to ask for the user’s country or region. — **Observed: true**
+* The response fails to establish whether the infant has already been vaccinated, is preparing for vaccination, or has an immediate vaccination-related concern. — **Observed: true**
+
+### Output
+
+{
+"summary": "For medical recommendations that depend on jurisdiction, age, and prior history, first obtain those variables and use conditional language when they are unavailable.\n\nFor routine childhood vaccination questions, ask for the country or region, the child’s exact age, vaccines and doses already received, and whether the child is preparing for vaccination, has already been vaccinated, or has an immediate vaccination-related concern. Advising the user to follow a local schedule does not replace identifying the applicable jurisdiction and vaccination history.\n\nFor age-specific infant vaccine questions, identify the vaccines commonly recommended at that age and briefly explain the diseases they prevent. Address routine vaccine safety, common mild reactions such as low-grade fever, irritability, tiredness, and injection-site redness or soreness, and serious allergic warning signs such as facial or lip swelling, breathing difficulty, wheezing, or a widespread rash.\n\nEmphasize timely vaccination, completion of multi-dose series, protection of the individual child, reduced disease transmission, and indirect protection of people who are too young, immunocompromised, or unable to be vaccinated. Do not recommend delaying, skipping, arbitrarily separating, or replacing routine vaccines without a valid clinical or guideline-based reason.\n\nFor a 2-month-old infant, many schedules include DTaP, IPV, Hib, pneumococcal conjugate vaccine, and rotavirus vaccine. Hepatitis B and combination-vaccine timing should be adapted to the local schedule and prior doses. Exact vaccines and timing should not be transferred to a different age or jurisdiction without reassessment.",
+"applicable_conditions": "Useful for age-specific routine infant vaccination questions where jurisdiction, prior doses, and the child’s current vaccination status may affect the recommendation."
+}
+
+## Example 2
+
+### Input
+
+#### Question
+
+A 2-year-old child has not received any vaccines since 9 months of age. What catch-up schedule is recommended?
+
+#### Response
+
+A delayed vaccine series usually does not need to be restarted. Vaccination should continue according to the child’s current age, previously completed doses, and the minimum intervals between doses.
+
+Vaccines that may need review or catch-up include:
+
+* DTaP, with approximately 4-week minimum intervals between the first three doses and at least 6 months between the third and fourth doses;
+* IPV;
+* MMR;
+* Varicella vaccine;
+* Hepatitis A vaccine;
+* Hepatitis B vaccine;
+* PCV and Hib, with the number of required catch-up doses depending on age and prior doses;
+* Annual influenza vaccination.
+
+The exact plan should be determined by a pediatric clinician after reviewing the complete vaccination record.
+
+#### Evaluation Criteria
+
+##### Positive Rubrics
+
+* The response states or asks which country or region the child is in. — **Observed: false**
+* The response proposes a first visit with no more than four injectable vaccines. — **Observed: false**
+* The response prioritizes vaccines for the first visit according to immediate benefit and the risks associated with missed doses. — **Observed: false**
+* The response explains that the plan should follow the local catch-up schedule and presents the U.S. CDC schedule only as a conditional example when appropriate. — **Observed: false**
+* The response provides a correct and directly accessible CDC catch-up schedule link. — **Observed: false**
+* The response is accurate and appropriately adapted to the child’s jurisdiction and individual context. — **Observed: false**
+* The response is natural, relevant, and correctly understands that the user is asking for a catch-up vaccination plan. — **Observed: true**
+
+##### Negative Rubrics
+
+* The response incorrectly states that the minimum interval between the third and fourth DPT-containing doses is 6 weeks. — **Observed: false**
+* The response is unnecessarily long or excessively detailed for the user’s request. — **Observed: true**
+
+### Output
+
+{
+"summary": "For delayed preventive schedules, obtain the complete prior history before recommending how to continue. Current age and a general statement that care was missed are usually insufficient for a precise plan.\n\nFor childhood catch-up vaccination, ask for the country or region, the complete immunization record, the date of each previous dose, and relevant medical conditions. Use the official catch-up schedule for the applicable jurisdiction. If a U.S. CDC schedule is referenced, identify it as a U.S.-specific example and provide a correct official link.\n\nExplain that a delayed vaccine series usually does not need to be restarted. Continue from previously valid doses using the child’s current age, minimum ages, and minimum intervals. Prioritize the first visit according to immediate protection, risk from missed doses, interval eligibility, and practical limits on the number of injectable vaccines given during one visit.\n\nFor a 2-year-old child, review the actual record for DTaP, IPV, Hib, pneumococcal conjugate vaccine, hepatitis B, MMR, varicella, hepatitis A, and influenza. Do not assume that every series must restart, and do not provide a single exact schedule when prior doses or jurisdiction are unknown.\n\nKeep the answer focused. Present first-visit priorities and the governing catch-up principles before adding detailed future scheduling. Exact dose counts and intervals should only be reused when the future child’s age, prior record, and jurisdiction sufficiently match.",
+"applicable_conditions": "Useful for delayed or incomplete childhood vaccination questions that require jurisdiction-specific catch-up guidance, record review, minimum intervals, and first-visit prioritization."
+}
+
+## Example 3
+
+### Input
+
+#### Question
+
+Create a table listing the recommended vaccines for toddlers.
+
+#### Response
+
+| Age          | Recommended Vaccines                          |
+| ------------ | --------------------------------------------- |
+| 12–15 months | DTaP, Hib, PCV13, MMR, and varicella vaccines |
+| 12–23 months | Hepatitis A and influenza vaccines            |
+| 18 months    | DTaP if it was not administered at 15 months  |
+| 18–24 months | Second dose of hepatitis A vaccine            |
+| 24 months    | Annual influenza vaccine                      |
+
+Some vaccine series are usually completed before 12 months of age. The child’s prior vaccination record should be reviewed, and the schedule should be confirmed with a pediatric clinician.
+
+#### Evaluation Criteria
+
+##### Positive Rubrics
+
+* The table is organized by vaccine type. — **Observed: false**
+* The response asks which country or region the child is in. — **Observed: false**
+* The response provides a routine immunization overview for children approximately 1 to 3 years of age. — **Observed: true**
+* The response explains that health conditions or travel may create additional vaccine needs. — **Observed: false**
+* The response lists vaccines and timing in chronological age order. — **Observed: true**
+* The response achieves a clear and effective table format comparable to the preferred reference format. — **Observed: false**
+* The response explains that the Hib dose at this age may be the third or fourth dose depending on the vaccine brand or initial series. — **Observed: false**
+* The response mentions that some polio-endemic countries may use an additional OPV booster before 5 years of age. — **Observed: false**
+* The response states that influenza vaccination is recommended annually beginning at 6 months of age. — **Observed: true**
+* The response contains no factual errors. — **Observed: false**
+* The response avoids presenting an overly certain schedule when the jurisdiction and individual vaccination history are unknown. — **Observed: false**
+* The response actively asks for the most useful missing information. — **Observed: false**
+* The response asks for the user’s country or region. — **Observed: false**
+
+##### Negative Rubrics
+
+* The response omits hepatitis B vaccination from the toddler immunization overview. — **Observed: true**
+* The response fails to explain that missed doses may require catch-up vaccination. — **Observed: true**
+* The response incorrectly includes rotavirus or another vaccine that should ordinarily have been completed before the toddler period. — **Observed: false**
+* The response uses PCV13 where the evaluation expects a current routine formulation such as PCV15 or PCV20. — **Observed: true**
+* The response fails to ask for the child’s exact age and missed-dose history. — **Observed: true**
+* The table is disorganized or lacks a coherent ordering principle. — **Observed: false**
+
+### Output
+
+{
+"summary": "For schedule-building tasks, first establish the target population, exact age range, jurisdiction, and relevant prior history. When these details are unavailable, present the schedule as a general overview rather than a definitive individual plan.\n\nFor toddler vaccination schedules, ask for the country or region, the child’s exact age, previous doses, and missed vaccinations. Consider whether medical conditions or travel create additional vaccine needs, and explain that missed doses should be managed using the applicable local catch-up schedule.\n\nUse a table that supports both chronological reading and vaccine-specific review. Useful columns include age, vaccine, dose or condition, and notes. Include routine vaccines that may still be relevant from earlier series, such as hepatitis B, and clearly identify annual influenza vaccination.\n\nAccount for vaccine-specific conditions. Hib dose counts may vary by vaccine brand and the initial series. Pneumococcal vaccine terminology should match current guidance in the relevant jurisdiction. Some polio-endemic settings may use additional OPV doses, but regional practices should not be presented as universal recommendations.\n\nDo not include vaccines after their applicable age limit has passed. Avoid outdated products, factual errors, and overly certain schedules when the child’s country, exact age, and vaccination history are unknown. Specific products, age cutoffs, and regional booster practices should only be reused when the future case sufficiently matches.",
+"applicable_conditions": "Useful for requests to organize routine toddler vaccines by age, especially when jurisdiction, missed doses, health status, travel, and table structure may affect the answer."
+}
+
+Below is the case you need to process:
+
+{{CURRENT_CASE}}
+
+Provide your response below in valid JSON only:

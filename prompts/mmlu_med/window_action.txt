@@ -1,0 +1,184 @@
+You are a helpful assistant responsible for updating a database of reusable summaries.
+
+Your task is to jointly process the temporary summaries provided below. Use the questions as context, and compare the summaries' content and applicable conditions with each other and with any existing summaries. Compare all relevant summaries across the entire input; retrieval associations do not restrict these comparisons. Produce the database actions needed to preserve reusable, valid, and non-conflicting guidance.
+
+Evaluate temporary summaries and their usage assessments rather than assuming they are correct or better than existing guidance. Greater length or specificity alone does not justify an update.
+
+For medical multiple-choice memory, preserve the connection between the distinguishing question conditions, what is being asked, and the reference answer content. A diagnosis, an underlying cause, a next management step, and a diagnosis to exclude first are different decision points. Keep clinically decisive details, treatment timing, comparison groups, and necessary option context; do not discard a useful question-answer connection merely because it originated from one case. Incidental identifiers or verbatim benchmark wording are not the reusable knowledge. Store answer content or medical concepts, not option letters or answer-position rules.
+
+For this dataset, also distinguish genetics calculations, anatomical definitions, lists of structures, concept classification, and biological explanations. Keep numerical inputs, the requested sex or genotype, and stated assumptions attached to the answer; do not turn a response's assumption into a fact from the question. Genotype symbols such as AaBbCc and AABBCC are scientific content, not option labels. Preserve the full content of a list-valued answer, without converting nested options into a longest-option rule. A radiograph mentioned in a text-only question is not a supplied image or an observed finding.
+
+Use only the question, answer, reference, evaluation feedback, and Information usage assessments actually supplied. Do not require missing Rubrics or invent missing evidence. Distinguish the original response, the extracted choice, and the reference answer. An extracted choice that disagrees with the reference is not correct knowledge; a null or ambiguous extraction is not a known wrong choice. A score of 1 supports the scored label match, not every explanation; a recorded 0 caused by extraction failure does not by itself invalidate medical guidance. Keep extraction behavior and scores out of reusable summary text.
+
+Compare answer meanings together with their conditions and question types. Different option letters need not mean different answers, and identical letters need not mean identical answers. Different conclusions under different conditions are not automatically a conflict. A shared disease or keyword alone does not justify merging distinct decision points. Information usage assessments may suggest an applicability problem but do not establish causality merely from retrieval, wording overlap, or a score change. Independent support must concern the same core question-answer connection and applicable conditions; repetition, another version of the same question, or a copied explanation does not supply it.
+
+When consolidating compatible question-answer memories, retain each supported condition-answer association rather than replacing them with a broad topic description. Candidate IDs are identifiers, even when written as letters; preserve them in `candidate_ids` and do not confuse them with option labels. Do not change the action rules below to consolidate candidates: without existing targets, consolidation uses `add`, not `merge`.
+
+Each temporary summary has a temporary ID. Each action, including `reject`, must list one or more supporting temporary IDs in `candidate_ids`. A temporary summary may support more than one compatible action, for example confirming an existing summary while also adding distinct new guidance. Every temporary ID must appear in at least one action.
+
+Use the following actions:
+
+* `add`: One or more temporary summaries contain reusable guidance not adequately expressed by an existing summary. Create one complete new summary.
+* `keep`: The temporary summaries do not materially improve a targeted existing summary. This action does not modify its text.
+* `confirm`: The temporary summaries provide independent support for the core content and conditions of one or more existing summaries. This action does not modify their text. A temporary summary from the same question as an existing summary cannot independently confirm that existing summary.
+* `update`: The temporary summaries or their usage assessments reveal a substantive correction, limitation, exception, priority, or applicability change to one existing summary. Produce one complete replacement summary.
+* `merge`: The temporary summaries and at least two existing summaries describe complementary parts of the same decision point. Produce one complete merged summary.
+* `split`: The temporary summaries and one or more existing summaries contain valid guidance for different conditions. Reorganize all relevant new and old guidance into at least two complete condition-specific summaries.
+* `dispute`: The temporary summaries and one or more existing summaries reach incompatible conclusions under the same conditions, and the available evidence cannot resolve the conflict. Do not overwrite either side.
+* `reject`: The temporary summaries are insufficiently reusable, unsupported, internally inconsistent, too specific to their questions, or mainly reflect dataset artifacts.
+
+Follow these output rules:
+
+* `add`: `target_ids` is empty and `summaries` contains exactly one complete new summary.
+* `keep`: `target_ids` contains the existing summary IDs assessed by this action and `summaries` is empty.
+* `confirm`: `target_ids` contains only existing summary IDs independently supported by at least one of this action's candidates, and `summaries` is empty.
+* `update`: `target_ids` contains exactly one existing summary ID and `summaries` contains exactly one complete replacement summary.
+* `merge`: `target_ids` contains at least two existing summary IDs and `summaries` contains exactly one complete merged summary.
+* `split`: `target_ids` contains all existing summaries involved and `summaries` contains at least two complete condition-specific summaries.
+* `dispute`: `target_ids` contains all conflicting existing summary IDs and `summaries` is empty.
+* `reject`: `target_ids` and `summaries` are empty.
+
+For every action, provide a brief, specific `reason` grounded in the input. For `update`, identify what substantively needs to change and which input supports that change. For `merge`, explain the shared decision point, what each targeted existing summary contributes, and how their applicable conditions fit together.
+
+For actions that require new summaries, provide their complete text and applicable conditions in `summaries`.
+
+Use only temporary IDs and existing summary IDs shown in the input. In any summary you create, preserve all valid, relevant, and non-conflicting guidance together with the conditions under which it applies. Do not broaden or narrow applicability without substantive support. Integrate new guidance with retained rules so the result is internally consistent and implements the changes described in the `reason`.
+
+When multiple candidates propose compatible changes to the same existing summary, combine those changes into one appropriate `update`, `merge`, or `split` action and provide the complete resulting summary or summaries. Valid `keep` or `confirm` actions may coexist with that action.
+
+Each existing summary may participate in at most one `update`, `merge`, or `split` action in the window. An existing summary targeted by `dispute` must not be updated, merged, or split in the same window.
+
+If no Existing Summaries section is provided, jointly compare the temporary summaries with each other. Use `add` to store distinct or consolidated reusable guidance and `reject` for unusable candidates; do not use an action that requires an existing target.
+
+Return valid JSON only:
+
+```json
+{
+  "actions": [
+    {
+      "action": "add|keep|confirm|update|merge|split|dispute|reject",
+      "candidate_ids": ["A"],
+      "target_ids": [],
+      "reason": "brief, specific justification based on the input",
+      "summaries": [
+        {
+          "summary": "complete processed summary",
+          "applicable_conditions": "clearly stated applicable conditions"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Example: Consolidation without existing targets still uses add
+
+Constructed window using questions and reference answers from supplied MMLU-med cases 45070, 18209, and 44699. The temporary summaries, candidate IDs, grouping, and actions are illustrative; this is not an observed Epoch window. Candidate IDs A, B, and C are identifiers and are unrelated to option labels in the questions. No existing summaries are supplied for this example.
+
+### Input
+
+#### Temporary ID: `A`
+
+Question:
+
+If an X-linked recessive disorder is in Hardy-Weinberg equilibrium and the incidence in males equals 1 in 100, then the expected incidence of affected homozygous females would be _______.
+A. 1 in 1000
+B. 1 in 4000
+C. 1 in 10 000
+D. 1 in 40 000
+
+Reference answer: 1 in 10 000
+
+Summary:
+
+For an X-linked recessive disorder in Hardy-Weinberg equilibrium with male incidence 1 in 100, the reference answer to the expected incidence of affected homozygous females is 1 in 10 000. This is the q² calculation with q = 0.01.
+
+Applicable Conditions:
+
+Applicable to population-frequency questions specifying an X-linked recessive disorder, Hardy-Weinberg equilibrium, and male incidence 1 in 100, and asking for affected homozygous females. A different male frequency requires a new calculation; do not substitute heterozygote or carrier frequency.
+
+#### Temporary ID: `B`
+
+Question:
+
+If the frequency of males affected with an X-linked recessive condition in a human population is .10 (one in ten), what will be the expected frequency of affected females?
+A. 0.01
+B. 0.001
+C. 0.02
+D. 0.0001
+
+Reference answer: 0.01
+
+Summary:
+
+For the X-linked recessive population-frequency question with affected males at 0.10 (one in ten), the reference answer to the expected frequency of affected females is 0.01. The requested quantity is affected-female frequency, not heterozygote frequency.
+
+Applicable Conditions:
+
+Applicable to the stated population-genetics expectation question with an X-linked recessive condition and male affected frequency 0.10. The stem does not explicitly state equilibrium; retain this bounded numerical pairing rather than asserting it for arbitrary populations or for heterozygote or carrier frequencies.
+
+#### Temporary ID: `C`
+
+Question:
+
+Which of the following is the best explanation for why net primary productivity in terrestrial ecosystems tends to increase toward the tropics?
+A. The higher species diversity in the tropics tends to increase plant growth.
+B. There are lower metabolic costs to plant growth in the tropics.
+C. The availability of water and warm temperatures in the tropics fosters photosynthesis.
+D. The tropics have more predators that minimize herbivory.
+
+Reference answer: The availability of water and warm temperatures in the tropics fosters photosynthesis.
+
+Summary:
+
+For a question asking the best explanation for why net primary productivity in terrestrial ecosystems tends to increase toward the tropics, the reference answer is: The availability of water and warm temperatures in the tropics fosters photosynthesis.
+
+Applicable Conditions:
+
+Applicable to explanation questions about the tendency of terrestrial net primary productivity to increase toward the tropics. Retain both water availability and warm temperatures; do not generalize the answer to every ecosystem, every temperature change, or an unrelated biological calculation.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "candidate_ids": [
+        "A",
+        "B"
+      ],
+      "target_ids": [],
+      "reason": "Candidates A and B ask for affected-female frequency for X-linked recessive conditions with different male frequencies. Store both numerical pairings and distinguish the explicitly stated equilibrium condition from the expectation question that leaves it unstated. There are no existing targets, so consolidation uses add, not merge. The related probe used retrieved guidance, so these inputs are not claimed as independent confirmation.",
+      "summaries": [
+        {
+          "summary": "For an X-linked recessive disorder in Hardy-Weinberg equilibrium with male incidence 1 in 100, the expected incidence of affected homozygous females is 1 in 10 000, using q² with q = 0.01. In the supplied X-linked recessive expectation question with affected males at 0.10, the reference expected frequency of affected females is 0.01. The latter question does not explicitly state equilibrium; retain its bounded numerical pairing rather than extending the calculation to arbitrary populations.",
+          "applicable_conditions": "Applicable to affected-female population-frequency questions about X-linked recessive conditions: the explicitly equilibrium-based male-incidence 1-in-100 problem, and the stated male-frequency 0.10 expectation problem. Preserve each numerical pairing and its assumption boundary; neither is a heterozygote-frequency, average-relatedness, or offspring-genotype question."
+        }
+      ]
+    },
+    {
+      "action": "add",
+      "candidate_ids": [
+        "C"
+      ],
+      "target_ids": [],
+      "reason": "Candidate C gives a supported explanation for a terrestrial productivity trend. It is unrelated to the genetic-frequency decision point and supplies separate reusable knowledge; add it separately rather than reject it or combine it with the genetic calculations.",
+      "summaries": [
+        {
+          "summary": "For a question asking the best explanation for why net primary productivity in terrestrial ecosystems tends to increase toward the tropics, the reference answer is: The availability of water and warm temperatures in the tropics fosters photosynthesis.",
+          "applicable_conditions": "Applicable to explanation questions about the tendency of terrestrial net primary productivity to increase toward the tropics. Retain both water availability and warm temperatures; do not generalize the answer to every ecosystem, every temperature change, or an unrelated biological calculation."
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+Below is the actual window to process. Use its identifiers, not the illustrative identifiers above.
+
+{{TEMPORARY_SUMMARIES}}
+
+{{EXISTING_SUMMARIES}}
+
+Return valid JSON only:

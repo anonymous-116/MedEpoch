@@ -1,0 +1,52 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is unrelated
+
+Constructed relationship example using condensed question-answer content from supplied MMLU-med cases 44699 and 44799; the action and target ID are illustrative, not an observed run result. Both source questions happen to have the same reference label, but their answer contents are unrelated.
+
+### Input
+
+Current question: Which of the following is the best explanation for why net primary productivity in terrestrial ecosystems tends to increase toward the tropics?
+Reference answer: The availability of water and warm temperatures in the tropics fosters photosynthesis.
+
+## Temporary Summary
+
+Summary:
+
+For a question asking the best explanation for why net primary productivity in terrestrial ecosystems tends to increase toward the tropics, the reference answer is: The availability of water and warm temperatures in the tropics fosters photosynthesis.
+
+Applicable Conditions:
+
+Applicable to explanation questions about the tendency of terrestrial net primary productivity to increase toward the tropics. Retain both water availability and warm temperatures; do not generalize the answer to every ecosystem, every temperature change, or an unrelated biological calculation.
+
+## Summary from Another Question
+
+ID: `1`
+
+Summary:
+
+Under Hardy-Weinberg equilibrium, when the two allele frequencies are 0.6 and 0.4, the reference answer to the heterozygote-frequency question is 0.48, calculated as 2pq = 2 * 0.6 * 0.4.
+
+Applicable Conditions:
+
+Applicable to heterozygote-frequency questions with two allele frequencies and Hardy-Weinberg equilibrium. Preserve the numerical inputs and distinguish this quantity from affected-female frequency or offspring-genotype probability.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate supplies a question-answer connection about the terrestrial productivity gradient. Summary 1 concerns heterozygote frequency and does not cover this connection. Leave Summary 1 untouched and store the candidate with add. Unrelatedness does not justify discarding the candidate with keep or reject, and a shared option letter in the source records does not justify confirm or merge.",
+      "summaries": [
+        {
+          "summary": "For a question asking the best explanation for why net primary productivity in terrestrial ecosystems tends to increase toward the tropics, the reference answer is: The availability of water and warm temperatures in the tropics fosters photosynthesis.",
+          "applicable_conditions": "Applicable to explanation questions about the tendency of terrestrial net primary productivity to increase toward the tropics. Retain both water availability and warm temperatures; do not generalize the answer to every ecosystem, every temperature change, or an unrelated biological calculation."
+        }
+      ]
+    }
+  ]
+}
+
+---

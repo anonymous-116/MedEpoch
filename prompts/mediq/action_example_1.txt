@@ -1,0 +1,52 @@
+---
+
+## Example: New question-answer knowledge is added when old knowledge is unrelated
+
+Constructed relationship example using condensed question-answer content from supplied mediq cases mediq-0643 and mediq-0704; the action is illustrative, not an observed run result. Both source answers happen to have the same option label, but answer content and question conditions determine the relationship.
+
+### Input
+
+Current question: For a patient with chronic watery diarrhea and weight loss, alcohol- or spicy-food-triggered flushing and palpitations, and increased urine 5-hydroxyindoleacetic acid, what is further evaluation most likely to show?
+Reference answer: Pulmonic valve stenosis
+
+## Temporary Summary
+
+Summary:
+
+For a patient with four months of watery diarrhea and weight loss, episodes of flushing and palpitations triggered by alcohol or spicy food, and increased urine 5-hydroxyindoleacetic acid, the reference answer to what further evaluation is most likely to show is pulmonic valve stenosis. This is the expected additional finding requested by the question, not a valve lesion already documented in the supplied examination.
+
+Applicable Conditions:
+
+Applicable to expected-further-finding questions with the combined diarrhea, triggered flushing and palpitations, and increased urine 5-hydroxyindoleacetic acid pattern. Do not transfer the answer to diarrhea alone or substitute it for the underlying cause when that is what another question asks.
+
+## Summary from Another Question
+
+ID: `1`
+
+Summary:
+
+For a woman with one month of frequent watery diarrhea, a history of bulimia nervosa, potassium 3.2 mEq/L, bicarbonate 33 mEq/L, and colonoscopy showing dark colored mucosa with interspersed white spots, the reference answer to the most likely underlying cause is medication abuse. The question reports that biopsies were obtained, but supplies neither their results nor the identity of an abused drug.
+
+Applicable Conditions:
+
+Applicable to underlying-cause questions combining the described diarrhea, bulimia history, electrolyte findings, and colonoscopic appearance. Do not infer medication abuse from diarrhea, travel, occupation, or psychiatric history alone, and do not invent concurrent vomiting or diuretic use to explain the laboratory findings.
+
+### Output
+
+{
+  "actions": [
+    {
+      "action": "add",
+      "target_ids": [],
+      "reason": "The candidate supplies a new question-answer connection about an expected further finding with flushing and increased urine 5-hydroxyindoleacetic acid. Summary 1 concerns medication abuse as the underlying cause of a different diarrhea pattern and does not cover this connection. Leave Summary 1 untouched and store the candidate with add. Shared diarrhea or an identical source option label does not justify keep, confirm, merge, or dispute.",
+      "summaries": [
+        {
+          "summary": "For a patient with four months of watery diarrhea and weight loss, episodes of flushing and palpitations triggered by alcohol or spicy food, and increased urine 5-hydroxyindoleacetic acid, the reference answer to what further evaluation is most likely to show is pulmonic valve stenosis. This is the expected additional finding requested by the question, not a valve lesion already documented in the supplied examination.",
+          "applicable_conditions": "Applicable to expected-further-finding questions with the combined diarrhea, triggered flushing and palpitations, and increased urine 5-hydroxyindoleacetic acid pattern. Do not transfer the answer to diarrhea alone or substitute it for the underlying cause when that is what another question asks."
+        }
+      ]
+    }
+  ]
+}
+
+---

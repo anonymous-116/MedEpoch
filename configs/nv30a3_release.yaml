@@ -1,0 +1,21 @@
+llm:
+  provider: openai_sdk
+  requires_api_key: false
+  base_url: http://127.0.0.1:8000/v1
+  base_url_env: VLLM_BASE_URL
+  model_name: nv30a3
+  model: nv30a3
+  stream: true
+  temperature: 0.1
+  top_p: 0.95
+  max_completion_tokens: 3000
+  include_usage: true
+  seed: 42
+  timeout: 1000
+  fallback_on_error: false
+  max_retries: 3
+  retry_delay_seconds: 10
+  data_inspection_retry_enabled: false
+  extra_body:
+    chat_template_kwargs:
+      enable_thinking: false
